@@ -10,7 +10,7 @@ package cluster
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	v1alpha1 "github.com/gontzalson/provider-azuredevops/apis/cluster/null/v1alpha1"
+	v1alpha1 "github.com/gontzalson/provider-azuredevops/apis/cluster/project/v1alpha1"
 	v1alpha1cluster "github.com/gontzalson/provider-azuredevops/apis/cluster/v1alpha1"
 	v1beta1 "github.com/gontzalson/provider-azuredevops/apis/cluster/v1beta1"
 )

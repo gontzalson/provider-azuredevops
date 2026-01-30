@@ -9,7 +9,9 @@ import (
 
 	"github.com/crossplane/upjet/v2/pkg/controller"
 
-	resource "github.com/gontzalson/provider-azuredevops/internal/controller/namespaced/null/resource"
+	features "github.com/gontzalson/provider-azuredevops/internal/controller/namespaced/project/features"
+	pipelinesettings "github.com/gontzalson/provider-azuredevops/internal/controller/namespaced/project/pipelinesettings"
+	project "github.com/gontzalson/provider-azuredevops/internal/controller/namespaced/project/project"
 	providerconfig "github.com/gontzalson/provider-azuredevops/internal/controller/namespaced/providerconfig"
 )
 
@@ -17,7 +19,9 @@ import (
 // the supplied manager.
 func Setup(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
-		resource.Setup,
+		features.Setup,
+		pipelinesettings.Setup,
+		project.Setup,
 		providerconfig.Setup,
 	} {
 		if err := setup(mgr, o); err != nil {
@@ -31,7 +35,9 @@ func Setup(mgr ctrl.Manager, o controller.Options) error {
 // the supplied manager gated.
 func SetupGated(mgr ctrl.Manager, o controller.Options) error {
 	for _, setup := range []func(ctrl.Manager, controller.Options) error{
-		resource.SetupGated,
+		features.SetupGated,
+		pipelinesettings.SetupGated,
+		project.SetupGated,
 		providerconfig.SetupGated,
 	} {
 		if err := setup(mgr, o); err != nil {

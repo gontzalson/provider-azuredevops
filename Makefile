@@ -1,7 +1,7 @@
 # ====================================================================================
 # Setup Project
 
-PROJECT_NAME ?= upjet-provider-template
+PROJECT_NAME ?= provider-azuredevops
 PROJECT_REPO ?= github.com/crossplane/$(PROJECT_NAME)
 
 export TERRAFORM_VERSION ?= 1.5.7
@@ -95,7 +95,7 @@ fallthrough: submodules
 
 # NOTE(hasheddan): we force image building to happen prior to xpkg build so that
 # we ensure image is present in daemon.
-xpkg.build.upjet-provider-template: do.build.images
+xpkg.build.provider-azuredevops: do.build.images
 
 # NOTE(hasheddan): we ensure up is installed prior to running platform-specific
 # build steps in parallel to avoid encountering an installation race condition.
