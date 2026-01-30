@@ -2,7 +2,7 @@
 # Setup Project
 
 PROJECT_NAME ?= provider-azuredevops
-PROJECT_REPO ?= github.com/crossplane/$(PROJECT_NAME)
+PROJECT_REPO ?= github.com/gontzalson/$(PROJECT_NAME)
 
 export TERRAFORM_VERSION ?= 1.5.7
 
@@ -14,7 +14,7 @@ export TERRAFORM_PROVIDER_SOURCE ?= microsoft/azuredevops
 export TERRAFORM_PROVIDER_REPO ?= https://github.com/microsoft/terraform-provider-azuredevops
 export TERRAFORM_PROVIDER_VERSION ?= 1.4.0
 export TERRAFORM_PROVIDER_DOWNLOAD_NAME ?= terraform-provider-azuredevops
-export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://releases.hashicorp.com/$(TERRAFORM_PROVIDER_DOWNLOAD_NAME)/$(TERRAFORM_PROVIDER_VERSION)
+export TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX ?= https://github.com/microsoft/terraform-provider-azuredevops/releases/download/$(TERRAFORM_PROVIDER_VERSION)
 export TERRAFORM_NATIVE_PROVIDER_BINARY ?= terraform-provider-azuredevops_v1.4.0
 export TERRAFORM_DOCS_PATH ?= website/docs/r
 
