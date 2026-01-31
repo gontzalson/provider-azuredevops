@@ -131,7 +131,7 @@ spec:
   forProvider:
     projectIdRef:
       name: my-project
-    enforcedettability: true
+    enforceSettability: true
     publishPipelineMetadata: true
     statusBadgesArePrivate: false
   providerConfigRef:
