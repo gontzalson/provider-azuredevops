@@ -40,6 +40,19 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Generate code and build binaries
+        run: |
+          export PATH="$HOME/go/bin:$PATH"
+          
+          # Generate provider code
+          go run cmd/generator/main.go .
+          
+          # Build provider binaries
+          mkdir -p cluster/images/provider-azuredevops/bin/linux_amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" \
+            -o cluster/images/provider-azuredevops/bin/linux_amd64/provider \
+            ./cmd/provider/main.go
+
       - name: Build runtime image
         uses: docker/build-push-action@v6
         with:
@@ -59,9 +72,6 @@ jobs:
       - name: Build and push xpkg
         run: |
           export PATH="$HOME/go/bin:$PATH"
-          
-          # Generate code
-          go run cmd/generator/main.go .
           
           # Build xpkg
           crossplane xpkg build \
