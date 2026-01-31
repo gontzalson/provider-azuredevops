@@ -52,10 +52,10 @@ jobs:
       - name: Build and Publish
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          BUILD_REGISTRY: ${{ env.REGISTRY }}
+          REGISTRY_ORGS: ${{ env.REGISTRY }}
         run: |
           export PATH="$HOME/go/bin:$PATH"
-          make publish VERSION=${VERSION}
+          make publish VERSION=${VERSION} REGISTRY_ORGS=${REGISTRY_ORGS}
 
       - name: Summary
         run: |
