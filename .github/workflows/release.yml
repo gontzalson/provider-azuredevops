@@ -1,0 +1,328 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (e.g., v0.1.0)'
+        required: true
+        type: string
+      skip_ci:
+        description: 'Skip CI checks (use with caution)'
+        required: false
+        type: boolean
+        default: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  GO_VERSION: '1.24'
+  TERRAFORM_VERSION: '1.5.7'
+  TERRAFORM_PROVIDER_SOURCE: 'microsoft/azuredevops'
+  TERRAFORM_PROVIDER_VERSION: '1.4.0'
+  TERRAFORM_PROVIDER_DOWNLOAD_NAME: 'terraform-provider-azuredevops'
+  TERRAFORM_NATIVE_PROVIDER_BINARY: 'terraform-provider-azuredevops_v1.4.0'
+  TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX: 'https://github.com/microsoft/terraform-provider-azuredevops/releases/download/1.4.0'
+
+jobs:
+  # Run CI checks before release
+  ci:
+    if: ${{ !inputs.skip_ci }}
+    uses: ./.github/workflows/ci.yml
+    secrets: inherit
+
+  # Determine version from tag or input
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      is_prerelease: ${{ steps.version.outputs.is_prerelease }}
+    steps:
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ github.ref_name }}"
+          else
+            VERSION="${{ inputs.version }}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+          # Check if this is a pre-release (contains -alpha, -beta, -rc, etc.)
+          if [[ "$VERSION" =~ -(alpha|beta|rc|dev) ]]; then
+            echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          fi
+          echo "Version: ${VERSION}"
+
+  # Build and push container images
+  build-container:
+    runs-on: ubuntu-24.04
+    needs: [prepare]
+    if: always() && needs.prepare.result == 'success'
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      attestations: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install goimports
+        run: go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Cache Go Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-release-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Generate provider code
+        run: |
+          export PATH="$HOME/go/bin:$PATH"
+          go run cmd/generator/main.go .
+
+      - name: Build provider binaries (multi-arch)
+        run: |
+          export PATH="$HOME/go/bin:$PATH"
+          mkdir -p cluster/images/provider-azuredevops/bin/linux_arm64
+          mkdir -p cluster/images/provider-azuredevops/bin/linux_amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w -X github.com/gontzalson/provider-azuredevops/internal/version.Version=${{ needs.prepare.outputs.version }}" -o cluster/images/provider-azuredevops/bin/linux_arm64/provider ./cmd/provider/main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w -X github.com/gontzalson/provider-azuredevops/internal/version.Version=${{ needs.prepare.outputs.version }}" -o cluster/images/provider-azuredevops/bin/linux_amd64/provider ./cmd/provider/main.go
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push AMD64 image
+        id: build-amd64
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cluster/images/provider-azuredevops
+          platforms: linux/amd64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-amd64
+          build-args: |
+            TARGETOS=linux
+            TARGETARCH=amd64
+            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
+            TERRAFORM_PROVIDER_SOURCE=${{ env.TERRAFORM_PROVIDER_SOURCE }}
+            TERRAFORM_PROVIDER_VERSION=${{ env.TERRAFORM_PROVIDER_VERSION }}
+            TERRAFORM_PROVIDER_DOWNLOAD_NAME=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_NAME }}
+            TERRAFORM_NATIVE_PROVIDER_BINARY=${{ env.TERRAFORM_NATIVE_PROVIDER_BINARY }}
+            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+      - name: Build and push ARM64 image
+        id: build-arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cluster/images/provider-azuredevops
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}-arm64
+          build-args: |
+            TARGETOS=linux
+            TARGETARCH=arm64
+            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
+            TERRAFORM_PROVIDER_SOURCE=${{ env.TERRAFORM_PROVIDER_SOURCE }}
+            TERRAFORM_PROVIDER_VERSION=${{ env.TERRAFORM_PROVIDER_VERSION }}
+            TERRAFORM_PROVIDER_DOWNLOAD_NAME=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_NAME }}
+            TERRAFORM_NATIVE_PROVIDER_BINARY=${{ env.TERRAFORM_NATIVE_PROVIDER_BINARY }}
+            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+      - name: Create and push multi-arch manifest
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+
+          # Create versioned multi-arch manifest
+          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-arm64
+
+          # Update latest tags (skip for pre-releases)
+          if [[ "${{ needs.prepare.outputs.is_prerelease }}" != "true" ]]; then
+            docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-amd64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-arm64
+
+            docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-amd64
+            docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-arm64
+          fi
+
+      - name: Generate artifact attestation (AMD64)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build-amd64.outputs.digest }}
+          push-to-registry: true
+
+      - name: Generate artifact attestation (ARM64)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build-arm64.outputs.digest }}
+          push-to-registry: true
+
+    outputs:
+      amd64_digest: ${{ steps.build-amd64.outputs.digest }}
+      arm64_digest: ${{ steps.build-arm64.outputs.digest }}
+
+  # Create GitHub Release
+  create-release:
+    runs-on: ubuntu-24.04
+    needs: [prepare, build-container]
+    if: always() && needs.build-container.result == 'success'
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate release notes
+        id: notes
+        run: |
+          VERSION="${{ needs.prepare.outputs.version }}"
+
+          # Get previous tag
+          PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          cat << EOF > release-notes.md
+          ## Crossplane Provider for Azure DevOps ${VERSION}
+
+          This release provides Kubernetes-native management of Azure DevOps resources using Crossplane.
+
+          ### Container Images
+
+          **Multi-architecture image (recommended):**
+          \`\`\`bash
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
+          \`\`\`
+
+          **Architecture-specific images:**
+          \`\`\`bash
+          # AMD64 (x86_64)
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-amd64
+
+          # ARM64 (aarch64)
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-arm64
+          \`\`\`
+
+          ### Installation
+
+          **Using Crossplane CLI:**
+          \`\`\`bash
+          crossplane xpkg install provider ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
+          \`\`\`
+
+          **Using kubectl:**
+          \`\`\`yaml
+          apiVersion: pkg.crossplane.io/v1
+          kind: Provider
+          metadata:
+            name: provider-azuredevops
+          spec:
+            package: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}
+          \`\`\`
+
+          ### Terraform Provider Details
+
+          - **Terraform Version:** ${{ env.TERRAFORM_VERSION }}
+          - **Azure DevOps Provider:** ${{ env.TERRAFORM_PROVIDER_VERSION }}
+          - **Provider Source:** ${{ env.TERRAFORM_PROVIDER_SOURCE }}
+
+          ### Image Digests
+
+          | Architecture | Digest |
+          |--------------|--------|
+          | AMD64 | \`${{ needs.build-container.outputs.amd64_digest }}\` |
+          | ARM64 | \`${{ needs.build-container.outputs.arm64_digest }}\` |
+
+          EOF
+
+          # Add changelog if there's a previous tag
+          if [[ -n "$PREV_TAG" ]]; then
+            echo "" >> release-notes.md
+            echo "### Changes since ${PREV_TAG}" >> release-notes.md
+            echo "" >> release-notes.md
+            git log --oneline ${PREV_TAG}..HEAD --pretty=format:"- %s" >> release-notes.md
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.prepare.outputs.version }}
+          name: ${{ needs.prepare.outputs.version }}
+          body_path: release-notes.md
+          draft: false
+          prerelease: ${{ needs.prepare.outputs.is_prerelease == 'true' }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # Summary job
+  summary:
+    runs-on: ubuntu-24.04
+    needs: [prepare, build-container, create-release]
+    if: always()
+
+    steps:
+      - name: Release Summary
+        run: |
+          echo "## Release Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.prepare.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Pre-release:** ${{ needs.prepare.outputs.is_prerelease }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Container Image" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.prepare.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Job Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Prepare | ${{ needs.prepare.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Container | ${{ needs.build-container.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Create Release | ${{ needs.create-release.result }} |" >> $GITHUB_STEP_SUMMARY
