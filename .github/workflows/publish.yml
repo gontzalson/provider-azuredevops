@@ -7,42 +7,69 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag for the image (e.g., v0.1.0)'
+        required: false
+        type: string
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+  GO_VERSION: '1.24'
+  TERRAFORM_VERSION: '1.5.7'
+  TERRAFORM_PROVIDER_SOURCE: 'microsoft/azuredevops'
+  TERRAFORM_PROVIDER_VERSION: '1.4.0'
+  TERRAFORM_PROVIDER_DOWNLOAD_NAME: 'terraform-provider-azuredevops'
+  TERRAFORM_NATIVE_PROVIDER_BINARY: 'terraform-provider-azuredevops_v1.4.0'
+  TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX: 'https://github.com/microsoft/terraform-provider-azuredevops/releases/download/1.4.0'
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: true
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: ${{ env.GO_VERSION }}
 
       - name: Install goimports
         run: go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Cache Go Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
 
       - name: Generate provider code
         run: |
           export PATH="$HOME/go/bin:$PATH"
           go run cmd/generator/main.go .
 
-      - name: Build provider binary
+      - name: Build provider binaries (multi-arch)
         run: |
           export PATH="$HOME/go/bin:$PATH"
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o cluster/images/provider-azuredevops/bin/linux_arm64/provider ./cmd/provider/main.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o cluster/images/provider-azuredevops/bin/linux_amd64/provider ./cmd/provider/main.go
+          mkdir -p cluster/images/provider-azuredevops/bin/linux_arm64
+          mkdir -p cluster/images/provider-azuredevops/bin/linux_amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o cluster/images/provider-azuredevops/bin/linux_arm64/provider ./cmd/provider/main.go
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o cluster/images/provider-azuredevops/bin/linux_amd64/provider ./cmd/provider/main.go
 
       - name: Log in to Container Registry
         uses: docker/login-action@v3
@@ -57,53 +84,131 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
-            type=ref,event=branch
+            # For tags: use semantic versioning
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-            type=sha
+            type=semver,pattern={{major}},enable=${{ !startsWith(github.ref, 'refs/tags/v0.') }}
+            # For main branch: use 'latest' and short sha
+            type=ref,event=branch
+            type=sha,prefix=,format=short
+            # Manual dispatch with custom version
+            type=raw,value=${{ inputs.version }},enable=${{ inputs.version != '' }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push ARM64 image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./cluster/images/provider-azuredevops
-          platforms: linux/arm64
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v0.1.0-arm64
-          build-args: |
-            TARGETOS=linux
-            TARGETARCH=arm64
-            TERRAFORM_VERSION=1.5.7
-            TERRAFORM_PROVIDER_SOURCE=microsoft/azuredevops
-            TERRAFORM_PROVIDER_VERSION=1.4.0
-            TERRAFORM_PROVIDER_DOWNLOAD_NAME=terraform-provider-azuredevops
-            TERRAFORM_NATIVE_PROVIDER_BINARY=terraform-provider-azuredevops_v1.4.0
-            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=https://github.com/microsoft/terraform-provider-azuredevops/releases/download/1.4.0
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${{ github.ref_name }}"
+          elif [[ -n "${{ inputs.version }}" ]]; then
+            VERSION="${{ inputs.version }}"
+          else
+            VERSION="latest"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Building version: ${VERSION}"
 
       - name: Build and push AMD64 image
-        uses: docker/build-push-action@v5
+        id: build-amd64
+        uses: docker/build-push-action@v6
         with:
           context: ./cluster/images/provider-azuredevops
           platforms: linux/amd64
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64,${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v0.1.0-amd64
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-amd64
           build-args: |
             TARGETOS=linux
             TARGETARCH=amd64
-            TERRAFORM_VERSION=1.5.7
-            TERRAFORM_PROVIDER_SOURCE=microsoft/azuredevops
-            TERRAFORM_PROVIDER_VERSION=1.4.0
-            TERRAFORM_PROVIDER_DOWNLOAD_NAME=terraform-provider-azuredevops
-            TERRAFORM_NATIVE_PROVIDER_BINARY=terraform-provider-azuredevops_v1.4.0
-            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=https://github.com/microsoft/terraform-provider-azuredevops/releases/download/1.4.0
+            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
+            TERRAFORM_PROVIDER_SOURCE=${{ env.TERRAFORM_PROVIDER_SOURCE }}
+            TERRAFORM_PROVIDER_VERSION=${{ env.TERRAFORM_PROVIDER_VERSION }}
+            TERRAFORM_PROVIDER_DOWNLOAD_NAME=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_NAME }}
+            TERRAFORM_NATIVE_PROVIDER_BINARY=${{ env.TERRAFORM_NATIVE_PROVIDER_BINARY }}
+            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+      - name: Build and push ARM64 image
+        id: build-arm64
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cluster/images/provider-azuredevops
+          platforms: linux/arm64
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-arm64
+          build-args: |
+            TARGETOS=linux
+            TARGETARCH=arm64
+            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
+            TERRAFORM_PROVIDER_SOURCE=${{ env.TERRAFORM_PROVIDER_SOURCE }}
+            TERRAFORM_PROVIDER_VERSION=${{ env.TERRAFORM_PROVIDER_VERSION }}
+            TERRAFORM_PROVIDER_DOWNLOAD_NAME=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_NAME }}
+            TERRAFORM_NATIVE_PROVIDER_BINARY=${{ env.TERRAFORM_NATIVE_PROVIDER_BINARY }}
+            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
 
       - name: Create and push multi-arch manifest
         run: |
-          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64
-          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v0.1.0 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v0.1.0-arm64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:v0.1.0-amd64
+          VERSION="${{ steps.version.outputs.version }}"
+
+          # Create versioned multi-arch manifest
+          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION} \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-amd64 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-arm64
+
+          # If this is a tag, also update latest
+          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-amd64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-arm64
+
+            # Also create latest-{arch} tags
+            docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-amd64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-amd64
+            docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest-arm64 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${VERSION}-arm64
+          fi
+
+      - name: Generate artifact attestation (AMD64)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build-amd64.outputs.digest }}
+          push-to-registry: true
+
+      - name: Generate artifact attestation (ARM64)
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.build-arm64.outputs.digest }}
+          push-to-registry: true
+
+      - name: Summary
+        run: |
+          echo "## Container Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** ${{ env.REGISTRY }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Pull commands" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
+          echo "# Multi-arch (auto-selects based on platform)" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# AMD64" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-amd64" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "# ARM64" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-arm64" >> $GITHUB_STEP_SUMMARY
+          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
