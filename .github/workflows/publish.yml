@@ -1,4 +1,4 @@
-name: Publish Container Image
+name: Publish
 
 on:
   push:
@@ -7,210 +7,60 @@ on:
     branches:
       - main
   workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag for the image (e.g., v0.1.0)'
-        required: false
-        type: string
 
 env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
-  GO_VERSION: '1.24'
-  TERRAFORM_VERSION: '1.5.7'
-  TERRAFORM_PROVIDER_SOURCE: 'microsoft/azuredevops'
-  TERRAFORM_PROVIDER_VERSION: '1.4.0'
-  TERRAFORM_PROVIDER_DOWNLOAD_NAME: 'terraform-provider-azuredevops'
-  TERRAFORM_NATIVE_PROVIDER_BINARY: 'terraform-provider-azuredevops_v1.4.0'
-  TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX: 'https://github.com/microsoft/terraform-provider-azuredevops/releases/download/1.4.0'
+  REGISTRY: ghcr.io/gontzalson
 
 jobs:
-  build-and-push:
-    runs-on: ubuntu-22.04
+  publish:
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-      id-token: write
-      attestations: write
 
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           submodules: true
-          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ${{ env.GO_VERSION }}
+          go-version: '1.24'
 
       - name: Install goimports
         run: go install golang.org/x/tools/cmd/goimports@latest
 
-      - name: Install Crossplane CLI
-        run: |
-          curl -sL "https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh" | sh
-          sudo mv crossplane /usr/local/bin/
-          crossplane --help > /dev/null && echo "✅ Crossplane CLI installed"
-
-      - name: Cache Go Build
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - name: Generate provider code
-        run: |
-          export PATH="$HOME/go/bin:$PATH"
-          go run cmd/generator/main.go .
-
-      - name: Build provider binaries (multi-arch)
-        run: |
-          export PATH="$HOME/go/bin:$PATH"
-          mkdir -p cluster/images/provider-azuredevops/bin/linux_arm64
-          mkdir -p cluster/images/provider-azuredevops/bin/linux_amd64
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o cluster/images/provider-azuredevops/bin/linux_arm64/provider ./cmd/provider/main.go
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o cluster/images/provider-azuredevops/bin/linux_amd64/provider ./cmd/provider/main.go
-
-      - name: Log in to Container Registry
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.REGISTRY }}
+          registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
 
       - name: Determine version
         id: version
         run: |
           if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
             VERSION="${{ github.ref_name }}"
-          elif [[ -n "${{ inputs.version }}" ]]; then
-            VERSION="${{ inputs.version }}"
           else
-            VERSION="latest"
+            VERSION="v0.1.0-dev"
           fi
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "Building version: ${VERSION}"
 
-      - name: Build and push AMD64 runtime image
-        id: build-amd64
-        uses: docker/build-push-action@v6
-        with:
-          context: ./cluster/images/provider-azuredevops
-          platforms: linux/amd64
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime:${{ steps.version.outputs.version }}-amd64
-          build-args: |
-            TARGETOS=linux
-            TARGETARCH=amd64
-            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
-            TERRAFORM_PROVIDER_SOURCE=${{ env.TERRAFORM_PROVIDER_SOURCE }}
-            TERRAFORM_PROVIDER_VERSION=${{ env.TERRAFORM_PROVIDER_VERSION }}
-            TERRAFORM_PROVIDER_DOWNLOAD_NAME=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_NAME }}
-            TERRAFORM_NATIVE_PROVIDER_BINARY=${{ env.TERRAFORM_NATIVE_PROVIDER_BINARY }}
-            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push ARM64 runtime image
-        id: build-arm64
-        uses: docker/build-push-action@v6
-        with:
-          context: ./cluster/images/provider-azuredevops
-          platforms: linux/arm64
-          push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime:${{ steps.version.outputs.version }}-arm64
-          build-args: |
-            TARGETOS=linux
-            TARGETARCH=arm64
-            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
-            TERRAFORM_PROVIDER_SOURCE=${{ env.TERRAFORM_PROVIDER_SOURCE }}
-            TERRAFORM_PROVIDER_VERSION=${{ env.TERRAFORM_PROVIDER_VERSION }}
-            TERRAFORM_PROVIDER_DOWNLOAD_NAME=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_NAME }}
-            TERRAFORM_NATIVE_PROVIDER_BINARY=${{ env.TERRAFORM_NATIVE_PROVIDER_BINARY }}
-            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Create multi-arch runtime manifest
+      - name: Build and Publish
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD_REGISTRY: ${{ env.REGISTRY }}
         run: |
-          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime:${{ steps.version.outputs.version }}-amd64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime:${{ steps.version.outputs.version }}-arm64
-
-      - name: Build and push Crossplane package (AMD64)
-        run: |
-          crossplane xpkg build \
-            --package-root=package \
-            --embed-runtime-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime:${{ steps.version.outputs.version }}-amd64 \
-            -o provider-azuredevops-amd64.xpkg
-          
-          crossplane xpkg push -f provider-azuredevops-amd64.xpkg \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-amd64
-
-      - name: Build and push Crossplane package (ARM64)
-        run: |
-          crossplane xpkg build \
-            --package-root=package \
-            --embed-runtime-image=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-runtime:${{ steps.version.outputs.version }}-arm64 \
-            -o provider-azuredevops-arm64.xpkg
-          
-          crossplane xpkg push -f provider-azuredevops-arm64.xpkg \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-arm64
-
-      - name: Create multi-arch package manifest
-        run: |
-          docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }} \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-amd64 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-arm64
-          
-          # Also tag as latest if this is a tag or main branch
-          if [[ "${{ steps.version.outputs.version }}" != "latest" ]] && [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            docker buildx imagetools create -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-amd64 \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}-arm64
-          fi
-
-      - name: Generate artifact attestation (AMD64)
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.build-amd64.outputs.digest }}
-          push-to-registry: true
-
-      - name: Generate artifact attestation (ARM64)
-        uses: actions/attest-build-provenance@v2
-        with:
-          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          subject-digest: ${{ steps.build-arm64.outputs.digest }}
-          push-to-registry: true
+          export PATH="$HOME/go/bin:$PATH"
+          make publish VERSION=${VERSION}
 
       - name: Summary
         run: |
-          echo "## 🎉 Published Crossplane Provider" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Package:** \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Platforms" >> $GITHUB_STEP_SUMMARY
-          echo "- linux/amd64" >> $GITHUB_STEP_SUMMARY
-          echo "- linux/arm64" >> $GITHUB_STEP_SUMMARY
+          echo "## 🎉 Published Provider" >> $GITHUB_STEP_SUMMARY
+          echo "**Package:** \`${{ env.REGISTRY }}/provider-azuredevops:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Install" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`yaml" >> $GITHUB_STEP_SUMMARY
@@ -219,5 +69,5 @@ jobs:
           echo "metadata:" >> $GITHUB_STEP_SUMMARY
           echo "  name: provider-azuredevops" >> $GITHUB_STEP_SUMMARY
           echo "spec:" >> $GITHUB_STEP_SUMMARY
-          echo "  package: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "  package: ${{ env.REGISTRY }}/provider-azuredevops:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
