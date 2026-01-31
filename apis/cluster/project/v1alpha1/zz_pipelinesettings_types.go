@@ -15,17 +15,22 @@ import (
 
 type PipelineSettingsInitParameters struct {
 
+	// Limit job authorization scope to current project for non-release pipelines.
 	// Limit job authorization scope to current project for non-release pipelines
 	EnforceJobScope *bool `json:"enforceJobScope,omitempty" tf:"enforce_job_scope,omitempty"`
 
+	// Limit job authorization scope to current project for release pipelines.
 	EnforceJobScopeForRelease *bool `json:"enforceJobScopeForRelease,omitempty" tf:"enforce_job_scope_for_release,omitempty"`
 
+	// Protect access to repositories in YAML pipelines.
 	// Protect access to repositories in YAML pipelines
 	EnforceReferencedRepoScopedToken *bool `json:"enforceReferencedRepoScopedToken,omitempty" tf:"enforce_referenced_repo_scoped_token,omitempty"`
 
+	// Limit variables that can be set at queue time.
 	// Limit variables that can be set at queue time
 	EnforceSettableVar *bool `json:"enforceSettableVar,omitempty" tf:"enforce_settable_var,omitempty"`
 
+	// The id of the project for which the project pipeline settings will be managed.
 	// +crossplane:generate:reference:type=github.com/gontzalson/provider-azuredevops/apis/cluster/project/v1alpha1.Project
 	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
 
@@ -37,54 +42,69 @@ type PipelineSettingsInitParameters struct {
 	// +kubebuilder:validation:Optional
 	ProjectIDSelector *v1.Selector `json:"projectIdSelector,omitempty" tf:"-"`
 
+	// Publish metadata from pipelines.
 	// Publish metadata from pipelines
 	PublishPipelineMetadata *bool `json:"publishPipelineMetadata,omitempty" tf:"publish_pipeline_metadata,omitempty"`
 
+	// Disable anonymous access to badges.
 	// Disable anonymous access to badges
 	StatusBadgesArePrivate *bool `json:"statusBadgesArePrivate,omitempty" tf:"status_badges_are_private,omitempty"`
 }
 
 type PipelineSettingsObservation struct {
 
+	// Limit job authorization scope to current project for non-release pipelines.
 	// Limit job authorization scope to current project for non-release pipelines
 	EnforceJobScope *bool `json:"enforceJobScope,omitempty" tf:"enforce_job_scope,omitempty"`
 
+	// Limit job authorization scope to current project for release pipelines.
 	EnforceJobScopeForRelease *bool `json:"enforceJobScopeForRelease,omitempty" tf:"enforce_job_scope_for_release,omitempty"`
 
+	// Protect access to repositories in YAML pipelines.
 	// Protect access to repositories in YAML pipelines
 	EnforceReferencedRepoScopedToken *bool `json:"enforceReferencedRepoScopedToken,omitempty" tf:"enforce_referenced_repo_scoped_token,omitempty"`
 
+	// Limit variables that can be set at queue time.
 	// Limit variables that can be set at queue time
 	EnforceSettableVar *bool `json:"enforceSettableVar,omitempty" tf:"enforce_settable_var,omitempty"`
 
+	// The ID of the project.
 	ID *string `json:"id,omitempty" tf:"id,omitempty"`
 
+	// The id of the project for which the project pipeline settings will be managed.
 	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
 
+	// Publish metadata from pipelines.
 	// Publish metadata from pipelines
 	PublishPipelineMetadata *bool `json:"publishPipelineMetadata,omitempty" tf:"publish_pipeline_metadata,omitempty"`
 
+	// Disable anonymous access to badges.
 	// Disable anonymous access to badges
 	StatusBadgesArePrivate *bool `json:"statusBadgesArePrivate,omitempty" tf:"status_badges_are_private,omitempty"`
 }
 
 type PipelineSettingsParameters struct {
 
+	// Limit job authorization scope to current project for non-release pipelines.
 	// Limit job authorization scope to current project for non-release pipelines
 	// +kubebuilder:validation:Optional
 	EnforceJobScope *bool `json:"enforceJobScope,omitempty" tf:"enforce_job_scope,omitempty"`
 
+	// Limit job authorization scope to current project for release pipelines.
 	// +kubebuilder:validation:Optional
 	EnforceJobScopeForRelease *bool `json:"enforceJobScopeForRelease,omitempty" tf:"enforce_job_scope_for_release,omitempty"`
 
+	// Protect access to repositories in YAML pipelines.
 	// Protect access to repositories in YAML pipelines
 	// +kubebuilder:validation:Optional
 	EnforceReferencedRepoScopedToken *bool `json:"enforceReferencedRepoScopedToken,omitempty" tf:"enforce_referenced_repo_scoped_token,omitempty"`
 
+	// Limit variables that can be set at queue time.
 	// Limit variables that can be set at queue time
 	// +kubebuilder:validation:Optional
 	EnforceSettableVar *bool `json:"enforceSettableVar,omitempty" tf:"enforce_settable_var,omitempty"`
 
+	// The id of the project for which the project pipeline settings will be managed.
 	// +crossplane:generate:reference:type=github.com/gontzalson/provider-azuredevops/apis/cluster/project/v1alpha1.Project
 	// +kubebuilder:validation:Optional
 	ProjectID *string `json:"projectId,omitempty" tf:"project_id,omitempty"`
@@ -97,10 +117,12 @@ type PipelineSettingsParameters struct {
 	// +kubebuilder:validation:Optional
 	ProjectIDSelector *v1.Selector `json:"projectIdSelector,omitempty" tf:"-"`
 
+	// Publish metadata from pipelines.
 	// Publish metadata from pipelines
 	// +kubebuilder:validation:Optional
 	PublishPipelineMetadata *bool `json:"publishPipelineMetadata,omitempty" tf:"publish_pipeline_metadata,omitempty"`
 
+	// Disable anonymous access to badges.
 	// Disable anonymous access to badges
 	// +kubebuilder:validation:Optional
 	StatusBadgesArePrivate *bool `json:"statusBadgesArePrivate,omitempty" tf:"status_badges_are_private,omitempty"`
@@ -133,7 +155,7 @@ type PipelineSettingsStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// PipelineSettings is the Schema for the PipelineSettingss API. <no value>
+// PipelineSettings is the Schema for the PipelineSettingss API. Manages Pipeline Settings for Azure DevOps projects.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

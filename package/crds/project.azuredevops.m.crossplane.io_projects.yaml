@@ -34,7 +34,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Project is the Schema for the Projects API. <no value>
+        description: Project is the Schema for the Projects API. Manages a project
+          within Azure DevOps organization.
         properties:
           apiVersion:
             description: |-
@@ -59,19 +60,31 @@ spec:
               forProvider:
                 properties:
                   description:
+                    description: The Description of the Project.
                     type: string
                   features:
                     additionalProperties:
                       type: string
+                    description: |-
+                      Defines the status (enabled, disabled) of the project features.
+                      Valid features are boards, repositories, pipelines, testplans, artifacts
                     type: object
                     x-kubernetes-map-type: granular
                   name:
+                    description: The Project Name.
                     type: string
                   versionControl:
+                    description: 'Specifies the version control system. Valid values:
+                      Git or Tfvc. Defaults to Git.'
                     type: string
                   visibility:
+                    description: 'Specifies the visibility of the Project. Valid values:
+                      private or public. Defaults to private.'
                     type: string
                   workItemTemplate:
+                    description: 'Specifies the work item template. Valid values:
+                      Agile, Basic, CMMI, Scrum or a custom, pre-existing one. Defaults
+                      to Agile. An empty string will use the parent organization default.'
                     type: string
                 type: object
               initProvider:
@@ -88,19 +101,31 @@ spec:
                   autoscaler.
                 properties:
                   description:
+                    description: The Description of the Project.
                     type: string
                   features:
                     additionalProperties:
                       type: string
+                    description: |-
+                      Defines the status (enabled, disabled) of the project features.
+                      Valid features are boards, repositories, pipelines, testplans, artifacts
                     type: object
                     x-kubernetes-map-type: granular
                   name:
+                    description: The Project Name.
                     type: string
                   versionControl:
+                    description: 'Specifies the version control system. Valid values:
+                      Git or Tfvc. Defaults to Git.'
                     type: string
                   visibility:
+                    description: 'Specifies the visibility of the Project. Valid values:
+                      private or public. Defaults to private.'
                     type: string
                   workItemTemplate:
+                    description: 'Specifies the work item template. Valid values:
+                      Agile, Basic, CMMI, Scrum or a custom, pre-existing one. Defaults
+                      to Agile. An empty string will use the parent organization default.'
                     type: string
                 type: object
               managementPolicies:
@@ -172,23 +197,37 @@ spec:
               atProvider:
                 properties:
                   description:
+                    description: The Description of the Project.
                     type: string
                   features:
                     additionalProperties:
                       type: string
+                    description: |-
+                      Defines the status (enabled, disabled) of the project features.
+                      Valid features are boards, repositories, pipelines, testplans, artifacts
                     type: object
                     x-kubernetes-map-type: granular
                   id:
+                    description: The Project ID of the Project.
                     type: string
                   name:
+                    description: The Project Name.
                     type: string
                   processTemplateId:
+                    description: The Process Template ID used by the Project.
                     type: string
                   versionControl:
+                    description: 'Specifies the version control system. Valid values:
+                      Git or Tfvc. Defaults to Git.'
                     type: string
                   visibility:
+                    description: 'Specifies the visibility of the Project. Valid values:
+                      private or public. Defaults to private.'
                     type: string
                   workItemTemplate:
+                    description: 'Specifies the work item template. Valid values:
+                      Agile, Basic, CMMI, Scrum or a custom, pre-existing one. Defaults
+                      to Agile. An empty string will use the parent organization default.'
                     type: string
                 type: object
               conditions:

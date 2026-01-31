@@ -15,57 +15,82 @@ import (
 )
 
 type ProjectInitParameters struct {
+
+	// The Description of the Project.
 	Description *string `json:"description,omitempty" tf:"description,omitempty"`
 
+	// Defines the status (enabled, disabled) of the project features.
+	// Valid features are boards, repositories, pipelines, testplans, artifacts
 	// +mapType=granular
 	Features map[string]*string `json:"features,omitempty" tf:"features,omitempty"`
 
+	// The Project Name.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
+	// Specifies the version control system. Valid values: Git or Tfvc. Defaults to Git.
 	VersionControl *string `json:"versionControl,omitempty" tf:"version_control,omitempty"`
 
+	// Specifies the visibility of the Project. Valid values: private or public. Defaults to private.
 	Visibility *string `json:"visibility,omitempty" tf:"visibility,omitempty"`
 
+	// Specifies the work item template. Valid values: Agile, Basic, CMMI, Scrum or a custom, pre-existing one. Defaults to Agile. An empty string will use the parent organization default.
 	WorkItemTemplate *string `json:"workItemTemplate,omitempty" tf:"work_item_template,omitempty"`
 }
 
 type ProjectObservation struct {
+
+	// The Description of the Project.
 	Description *string `json:"description,omitempty" tf:"description,omitempty"`
 
+	// Defines the status (enabled, disabled) of the project features.
+	// Valid features are boards, repositories, pipelines, testplans, artifacts
 	// +mapType=granular
 	Features map[string]*string `json:"features,omitempty" tf:"features,omitempty"`
 
+	// The Project ID of the Project.
 	ID *string `json:"id,omitempty" tf:"id,omitempty"`
 
+	// The Project Name.
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
+	// The Process Template ID used by the Project.
 	ProcessTemplateID *string `json:"processTemplateId,omitempty" tf:"process_template_id,omitempty"`
 
+	// Specifies the version control system. Valid values: Git or Tfvc. Defaults to Git.
 	VersionControl *string `json:"versionControl,omitempty" tf:"version_control,omitempty"`
 
+	// Specifies the visibility of the Project. Valid values: private or public. Defaults to private.
 	Visibility *string `json:"visibility,omitempty" tf:"visibility,omitempty"`
 
+	// Specifies the work item template. Valid values: Agile, Basic, CMMI, Scrum or a custom, pre-existing one. Defaults to Agile. An empty string will use the parent organization default.
 	WorkItemTemplate *string `json:"workItemTemplate,omitempty" tf:"work_item_template,omitempty"`
 }
 
 type ProjectParameters struct {
 
+	// The Description of the Project.
 	// +kubebuilder:validation:Optional
 	Description *string `json:"description,omitempty" tf:"description,omitempty"`
 
+	// Defines the status (enabled, disabled) of the project features.
+	// Valid features are boards, repositories, pipelines, testplans, artifacts
 	// +kubebuilder:validation:Optional
 	// +mapType=granular
 	Features map[string]*string `json:"features,omitempty" tf:"features,omitempty"`
 
+	// The Project Name.
 	// +kubebuilder:validation:Optional
 	Name *string `json:"name,omitempty" tf:"name,omitempty"`
 
+	// Specifies the version control system. Valid values: Git or Tfvc. Defaults to Git.
 	// +kubebuilder:validation:Optional
 	VersionControl *string `json:"versionControl,omitempty" tf:"version_control,omitempty"`
 
+	// Specifies the visibility of the Project. Valid values: private or public. Defaults to private.
 	// +kubebuilder:validation:Optional
 	Visibility *string `json:"visibility,omitempty" tf:"visibility,omitempty"`
 
+	// Specifies the work item template. Valid values: Agile, Basic, CMMI, Scrum or a custom, pre-existing one. Defaults to Agile. An empty string will use the parent organization default.
 	// +kubebuilder:validation:Optional
 	WorkItemTemplate *string `json:"workItemTemplate,omitempty" tf:"work_item_template,omitempty"`
 }
@@ -97,7 +122,7 @@ type ProjectStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Project is the Schema for the Projects API. <no value>
+// Project is the Schema for the Projects API. Manages a project within Azure DevOps organization.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

@@ -15,6 +15,8 @@ import (
 
 type FeaturesInitParameters struct {
 
+	// Defines the status (enabled, disabled) of the project features.
+	// Valid features boards, repositories, pipelines, testplans, artifacts
 	// +mapType=granular
 	Features map[string]*string `json:"features,omitempty" tf:"features,omitempty"`
 
@@ -32,6 +34,8 @@ type FeaturesInitParameters struct {
 
 type FeaturesObservation struct {
 
+	// Defines the status (enabled, disabled) of the project features.
+	// Valid features boards, repositories, pipelines, testplans, artifacts
 	// +mapType=granular
 	Features map[string]*string `json:"features,omitempty" tf:"features,omitempty"`
 
@@ -42,6 +46,8 @@ type FeaturesObservation struct {
 
 type FeaturesParameters struct {
 
+	// Defines the status (enabled, disabled) of the project features.
+	// Valid features boards, repositories, pipelines, testplans, artifacts
 	// +kubebuilder:validation:Optional
 	// +mapType=granular
 	Features map[string]*string `json:"features,omitempty" tf:"features,omitempty"`
@@ -86,7 +92,7 @@ type FeaturesStatus struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:storageversion
 
-// Features is the Schema for the Featuress API. <no value>
+// Features is the Schema for the Featuress API. Manages features for Azure DevOps projects.
 // +kubebuilder:printcolumn:name="SYNCED",type="string",JSONPath=".status.conditions[?(@.type=='Synced')].status"
 // +kubebuilder:printcolumn:name="READY",type="string",JSONPath=".status.conditions[?(@.type=='Ready')].status"
 // +kubebuilder:printcolumn:name="EXTERNAL-NAME",type="string",JSONPath=".metadata.annotations.crossplane\\.io/external-name"

@@ -34,7 +34,8 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Features is the Schema for the Featuress API. <no value>
+        description: Features is the Schema for the Featuress API. Manages features
+          for Azure DevOps projects.
         properties:
           apiVersion:
             description: |-
@@ -75,6 +76,9 @@ spec:
                   features:
                     additionalProperties:
                       type: string
+                    description: |-
+                      Defines the status (enabled, disabled) of the project features.
+                      Valid features boards, repositories, pipelines, testplans, artifacts
                     type: object
                     x-kubernetes-map-type: granular
                   projectId:
@@ -170,6 +174,9 @@ spec:
                   features:
                     additionalProperties:
                       type: string
+                    description: |-
+                      Defines the status (enabled, disabled) of the project features.
+                      Valid features boards, repositories, pipelines, testplans, artifacts
                     type: object
                     x-kubernetes-map-type: granular
                   projectId:
@@ -348,6 +355,9 @@ spec:
                   features:
                     additionalProperties:
                       type: string
+                    description: |-
+                      Defines the status (enabled, disabled) of the project features.
+                      Valid features boards, repositories, pipelines, testplans, artifacts
                     type: object
                     x-kubernetes-map-type: granular
                   id:

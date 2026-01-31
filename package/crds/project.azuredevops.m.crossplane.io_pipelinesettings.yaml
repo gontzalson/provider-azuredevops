@@ -35,7 +35,7 @@ spec:
     schema:
       openAPIV3Schema:
         description: PipelineSettings is the Schema for the PipelineSettingss API.
-          <no value>
+          Manages Pipeline Settings for Azure DevOps projects.
         properties:
           apiVersion:
             description: |-
@@ -60,18 +60,27 @@ spec:
               forProvider:
                 properties:
                   enforceJobScope:
-                    description: Limit job authorization scope to current project
-                      for non-release pipelines
+                    description: |-
+                      Limit job authorization scope to current project for non-release pipelines.
+                      Limit job authorization scope to current project for non-release pipelines
                     type: boolean
                   enforceJobScopeForRelease:
+                    description: Limit job authorization scope to current project
+                      for release pipelines.
                     type: boolean
                   enforceReferencedRepoScopedToken:
-                    description: Protect access to repositories in YAML pipelines
+                    description: |-
+                      Protect access to repositories in YAML pipelines.
+                      Protect access to repositories in YAML pipelines
                     type: boolean
                   enforceSettableVar:
-                    description: Limit variables that can be set at queue time
+                    description: |-
+                      Limit variables that can be set at queue time.
+                      Limit variables that can be set at queue time
                     type: boolean
                   projectId:
+                    description: The id of the project for which the project pipeline
+                      settings will be managed.
                     type: string
                   projectIdRef:
                     description: Reference to a Project in project to populate projectId.
@@ -154,10 +163,14 @@ spec:
                         type: object
                     type: object
                   publishPipelineMetadata:
-                    description: Publish metadata from pipelines
+                    description: |-
+                      Publish metadata from pipelines.
+                      Publish metadata from pipelines
                     type: boolean
                   statusBadgesArePrivate:
-                    description: Disable anonymous access to badges
+                    description: |-
+                      Disable anonymous access to badges.
+                      Disable anonymous access to badges
                     type: boolean
                 type: object
               initProvider:
@@ -174,18 +187,27 @@ spec:
                   autoscaler.
                 properties:
                   enforceJobScope:
-                    description: Limit job authorization scope to current project
-                      for non-release pipelines
+                    description: |-
+                      Limit job authorization scope to current project for non-release pipelines.
+                      Limit job authorization scope to current project for non-release pipelines
                     type: boolean
                   enforceJobScopeForRelease:
+                    description: Limit job authorization scope to current project
+                      for release pipelines.
                     type: boolean
                   enforceReferencedRepoScopedToken:
-                    description: Protect access to repositories in YAML pipelines
+                    description: |-
+                      Protect access to repositories in YAML pipelines.
+                      Protect access to repositories in YAML pipelines
                     type: boolean
                   enforceSettableVar:
-                    description: Limit variables that can be set at queue time
+                    description: |-
+                      Limit variables that can be set at queue time.
+                      Limit variables that can be set at queue time
                     type: boolean
                   projectId:
+                    description: The id of the project for which the project pipeline
+                      settings will be managed.
                     type: string
                   projectIdRef:
                     description: Reference to a Project in project to populate projectId.
@@ -268,10 +290,14 @@ spec:
                         type: object
                     type: object
                   publishPipelineMetadata:
-                    description: Publish metadata from pipelines
+                    description: |-
+                      Publish metadata from pipelines.
+                      Publish metadata from pipelines
                     type: boolean
                   statusBadgesArePrivate:
-                    description: Disable anonymous access to badges
+                    description: |-
+                      Disable anonymous access to badges.
+                      Disable anonymous access to badges
                     type: boolean
                 type: object
               managementPolicies:
@@ -338,26 +364,40 @@ spec:
               atProvider:
                 properties:
                   enforceJobScope:
-                    description: Limit job authorization scope to current project
-                      for non-release pipelines
+                    description: |-
+                      Limit job authorization scope to current project for non-release pipelines.
+                      Limit job authorization scope to current project for non-release pipelines
                     type: boolean
                   enforceJobScopeForRelease:
+                    description: Limit job authorization scope to current project
+                      for release pipelines.
                     type: boolean
                   enforceReferencedRepoScopedToken:
-                    description: Protect access to repositories in YAML pipelines
+                    description: |-
+                      Protect access to repositories in YAML pipelines.
+                      Protect access to repositories in YAML pipelines
                     type: boolean
                   enforceSettableVar:
-                    description: Limit variables that can be set at queue time
+                    description: |-
+                      Limit variables that can be set at queue time.
+                      Limit variables that can be set at queue time
                     type: boolean
                   id:
+                    description: The ID of the project.
                     type: string
                   projectId:
+                    description: The id of the project for which the project pipeline
+                      settings will be managed.
                     type: string
                   publishPipelineMetadata:
-                    description: Publish metadata from pipelines
+                    description: |-
+                      Publish metadata from pipelines.
+                      Publish metadata from pipelines
                     type: boolean
                   statusBadgesArePrivate:
-                    description: Disable anonymous access to badges
+                    description: |-
+                      Disable anonymous access to badges.
+                      Disable anonymous access to badges
                     type: boolean
                 type: object
               conditions:

@@ -1,0 +1,38 @@
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: PipelineSettings
+metadata:
+  annotations:
+    meta.upbound.io/example-id: project/v1alpha1/pipelinesettings
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    enforceJobScope: true
+    enforceReferencedRepoScopedToken: false
+    enforceSettableVar: true
+    projectIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+    publishPipelineMetadata: false
+    statusBadgesArePrivate: true
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: project/v1alpha1/pipelinesettings
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
