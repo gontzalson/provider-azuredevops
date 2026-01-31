@@ -1,0 +1,34 @@
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Features
+metadata:
+  annotations:
+    meta.upbound.io/example-id: project/v1alpha1/features
+  labels:
+    testing.upbound.io/example-name: example-features
+  name: example-features
+spec:
+  forProvider:
+    features:
+      artifacts: enabled
+      testplans: disabled
+    projectIdSelector:
+      matchLabels:
+        testing.upbound.io/example-name: example
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: project/v1alpha1/features
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
