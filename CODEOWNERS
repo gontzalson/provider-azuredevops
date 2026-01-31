@@ -12,5 +12,22 @@
 #
 # See also OWNERS.md for governance details
 
-# Fallback owners
-#*			@username
+# Fallback owners - all PRs require review from at least one maintainer
+*                       @gontzalson
+
+# API and CRD definitions
+/apis/                  @gontzalson
+/package/crds/          @gontzalson
+
+# Provider configuration
+/config/                @gontzalson
+
+# Controller implementation
+/internal/controller/   @gontzalson
+
+# CI/CD and GitHub configuration
+/.github/               @gontzalson
+
+# Build system
+/Makefile               @gontzalson
+/build/                 @gontzalson

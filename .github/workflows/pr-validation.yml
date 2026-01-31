@@ -1,0 +1,82 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  pr-title:
+    name: Validate PR Title
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Validate PR title follows conventional commits
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          requireScope: false
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            should start with a lowercase letter.
+
+            Examples of valid PR titles:
+            - feat: add new Azure DevOps project resource
+            - fix(api): resolve nil pointer in project controller
+            - docs: update installation instructions
+            - chore(deps): bump crossplane-runtime to v2.1.0
+
+  dco:
+    name: DCO Check
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check DCO
+        uses: tisonkun/actions-dco@v1.2
+        continue-on-error: true
+
+  size-labeler:
+    name: PR Size Label
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Label PR based on size
+        uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'size/XS'
+          xs_max_size: 10
+          s_label: 'size/S'
+          s_max_size: 100
+          m_label: 'size/M'
+          m_max_size: 500
+          l_label: 'size/L'
+          l_max_size: 1000
+          xl_label: 'size/XL'
+          fail_if_xl: false
+          message_if_xl: >
+            This PR exceeds the recommended size of 1000 lines.
+            Please consider breaking it into smaller, more focused PRs for easier review.
+          files_to_ignore: |
+            "go.sum"
+            "**/zz_*.go"
