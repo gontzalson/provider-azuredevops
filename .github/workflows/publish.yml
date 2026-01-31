@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - 'v*'
-    branches:
-      - main
   workflow_dispatch:
 
 env:
@@ -29,8 +27,11 @@ jobs:
         with:
           go-version: '1.24'
 
-      - name: Install goimports
-        run: go install golang.org/x/tools/cmd/goimports@latest
+      - name: Install tools
+        run: |
+          go install golang.org/x/tools/cmd/goimports@latest
+          curl -sL "https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh" | sh
+          sudo mv crossplane /usr/local/bin/
 
       - name: Login to GHCR
         uses: docker/login-action@v3
@@ -39,35 +40,34 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Determine version
-        id: version
-        run: |
-          if [[ "${{ github.ref }}" == refs/tags/v* ]]; then
-            VERSION="${{ github.ref_name }}"
-          else
-            VERSION="v0.1.0-dev"
-          fi
-          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+      - name: Build runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cluster/images/provider-azuredevops
+          push: true
+          tags: ${{ env.REGISTRY }}/provider-azuredevops-runtime:latest
+          build-args: |
+            TARGETOS=linux
+            TARGETARCH=amd64
+            TERRAFORM_VERSION=1.5.7
+            TERRAFORM_PROVIDER_SOURCE=microsoft/azuredevops
+            TERRAFORM_PROVIDER_VERSION=1.4.0
+            TERRAFORM_PROVIDER_DOWNLOAD_NAME=terraform-provider-azuredevops
+            TERRAFORM_NATIVE_PROVIDER_BINARY=terraform-provider-azuredevops_v1.4.0
+            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=https://github.com/microsoft/terraform-provider-azuredevops/releases/download/1.4.0
 
-      - name: Build and Publish
-        env:
-          VERSION: ${{ steps.version.outputs.version }}
-          REGISTRY_ORGS: ${{ env.REGISTRY }}
+      - name: Build and push xpkg
         run: |
           export PATH="$HOME/go/bin:$PATH"
-          make publish VERSION=${VERSION} REGISTRY_ORGS=${REGISTRY_ORGS}
-
-      - name: Summary
-        run: |
-          echo "## 🎉 Published Provider" >> $GITHUB_STEP_SUMMARY
-          echo "**Package:** \`${{ env.REGISTRY }}/provider-azuredevops:${{ steps.version.outputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### Install" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`yaml" >> $GITHUB_STEP_SUMMARY
-          echo "apiVersion: pkg.crossplane.io/v1" >> $GITHUB_STEP_SUMMARY
-          echo "kind: Provider" >> $GITHUB_STEP_SUMMARY
-          echo "metadata:" >> $GITHUB_STEP_SUMMARY
-          echo "  name: provider-azuredevops" >> $GITHUB_STEP_SUMMARY
-          echo "spec:" >> $GITHUB_STEP_SUMMARY
-          echo "  package: ${{ env.REGISTRY }}/provider-azuredevops:${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-          echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
+          
+          # Generate code
+          go run cmd/generator/main.go .
+          
+          # Build xpkg
+          crossplane xpkg build \
+            --package-root=package \
+            --embed-runtime-image=${{ env.REGISTRY }}/provider-azuredevops-runtime:latest \
+            -o provider-azuredevops.xpkg
+          
+          # Push xpkg  
+          crossplane xpkg push -f provider-azuredevops.xpkg ${{ env.REGISTRY }}/provider-azuredevops:latest
