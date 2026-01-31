@@ -1,0 +1,118 @@
+name: PR Validation
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  pull_request_target:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  pr-title:
+    name: Validate PR Title
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Validate PR title follows conventional commits
+        uses: amannn/action-semantic-pull-request@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # Configure which types are allowed
+          types: |
+            feat
+            fix
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+            chore
+            revert
+          # Configure which scopes are allowed (optional)
+          scopes: |
+            api
+            controller
+            config
+            deps
+            ci
+            docs
+            provider
+          # Require scope to be present
+          requireScope: false
+          # Configure additional subject rules
+          subjectPattern: ^(?![A-Z]).+$
+          subjectPatternError: |
+            The subject "{subject}" found in the pull request title "{title}"
+            should start with a lowercase letter.
+
+            Examples of valid PR titles:
+            - feat: add new Azure DevOps project resource
+            - fix(api): resolve nil pointer in project controller
+            - docs: update installation instructions
+            - chore(deps): bump crossplane-runtime to v2.1.0
+
+  dco:
+    name: DCO Check
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Check DCO
+        uses: dkhamsing/dco-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  branch-naming:
+    name: Validate Branch Name
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Check branch naming convention
+        uses: deepakputhraya/action-branch-name@master
+        with:
+          regex: '^(feature|feat|fix|bugfix|hotfix|release|docs|chore|refactor|test|ci|dependabot|renovate|claude)\/[a-zA-Z0-9._-]+$'
+          allowed_prefixes: 'feature,feat,fix,bugfix,hotfix,release,docs,chore,refactor,test,ci,dependabot,renovate,claude'
+          ignore: main,master,develop,release-*
+          min_length: 5
+          max_length: 100
+
+  size-labeler:
+    name: PR Size Label
+    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Label PR based on size
+        uses: codelytv/pr-size-labeler@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          xs_label: 'size/XS'
+          xs_max_size: 10
+          s_label: 'size/S'
+          s_max_size: 100
+          m_label: 'size/M'
+          m_max_size: 500
+          l_label: 'size/L'
+          l_max_size: 1000
+          xl_label: 'size/XL'
+          fail_if_xl: false
+          message_if_xl: >
+            This PR exceeds the recommended size of 1000 lines.
+            Please consider breaking it into smaller, more focused PRs for easier review.
+          files_to_ignore: |
+            "package-lock.json"
+            "go.sum"
+            "**/*.generated.go"
+            "**/zz_*.go"
