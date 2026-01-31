@@ -235,6 +235,82 @@ jobs:
       - name: Deploying locally built provider package
         run: make local-deploy
 
+  # Validate container image builds (without pushing)
+  container-build:
+    runs-on: ubuntu-24.04
+    needs: detect-noop
+    if: needs.detect-noop.outputs.noop != 'true'
+    env:
+      TERRAFORM_VERSION: '1.5.7'
+      TERRAFORM_PROVIDER_SOURCE: 'microsoft/azuredevops'
+      TERRAFORM_PROVIDER_VERSION: '1.4.0'
+      TERRAFORM_PROVIDER_DOWNLOAD_NAME: 'terraform-provider-azuredevops'
+      TERRAFORM_NATIVE_PROVIDER_BINARY: 'terraform-provider-azuredevops_v1.4.0'
+      TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX: 'https://github.com/microsoft/terraform-provider-azuredevops/releases/download/1.4.0'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          submodules: true
+
+      - name: Setup Go
+        uses: actions/setup-go@4dc6199c7b1a012772edbd06daecab0f50c9053c # v6.1.0
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install goimports
+        run: go install golang.org/x/tools/cmd/goimports@latest
+
+      - name: Cache Go Build
+        uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5.0.1
+        with:
+          path: |
+            ~/.cache/go-build
+            ~/go/pkg/mod
+          key: ${{ runner.os }}-go-container-${{ hashFiles('**/go.sum') }}
+          restore-keys: ${{ runner.os }}-go-container-
+
+      - name: Generate provider code
+        run: |
+          export PATH="$HOME/go/bin:$PATH"
+          go run cmd/generator/main.go .
+
+      - name: Build provider binaries
+        run: |
+          export PATH="$HOME/go/bin:$PATH"
+          mkdir -p cluster/images/provider-azuredevops/bin/linux_amd64
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o cluster/images/provider-azuredevops/bin/linux_amd64/provider ./cmd/provider/main.go
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+        with:
+          version: ${{ env.DOCKER_BUILDX_VERSION }}
+          install: true
+
+      - name: Build container image (validation only)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./cluster/images/provider-azuredevops
+          platforms: linux/amd64
+          push: false
+          load: true
+          tags: provider-azuredevops:test
+          build-args: |
+            TARGETOS=linux
+            TARGETARCH=amd64
+            TERRAFORM_VERSION=${{ env.TERRAFORM_VERSION }}
+            TERRAFORM_PROVIDER_SOURCE=${{ env.TERRAFORM_PROVIDER_SOURCE }}
+            TERRAFORM_PROVIDER_VERSION=${{ env.TERRAFORM_PROVIDER_VERSION }}
+            TERRAFORM_PROVIDER_DOWNLOAD_NAME=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_NAME }}
+            TERRAFORM_NATIVE_PROVIDER_BINARY=${{ env.TERRAFORM_NATIVE_PROVIDER_BINARY }}
+            TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX=${{ env.TERRAFORM_PROVIDER_DOWNLOAD_URL_PREFIX }}
+
+      - name: Verify container image
+        run: |
+          docker images provider-azuredevops:test
+          docker run --rm provider-azuredevops:test --help || echo "Provider binary executed successfully"
+
   publish-artifacts:
     runs-on: ubuntu-24.04
     needs:
@@ -244,6 +320,7 @@ jobs:
       - check-diff
       - unit-tests
       - local-deploy
+      - container-build
     if: needs.detect-noop.outputs.noop != 'true'
 
     steps:

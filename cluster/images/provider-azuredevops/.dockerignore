@@ -1,0 +1,10 @@
+# Git
+.git
+.gitignore
+
+# Build artifacts we don't need
+*.md
+LICENSE
+
+# Test files
+*_test.go
