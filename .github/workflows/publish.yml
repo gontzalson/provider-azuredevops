@@ -52,7 +52,7 @@ jobs:
         run: |
           curl -sL "https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh" | sh
           sudo mv crossplane /usr/local/bin/
-          crossplane version
+          crossplane --help > /dev/null && echo "✅ Crossplane CLI installed"
 
       - name: Cache Go Build
         uses: actions/cache@v4
