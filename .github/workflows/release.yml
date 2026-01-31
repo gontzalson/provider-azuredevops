@@ -36,7 +36,7 @@ jobs:
 
   # Determine version from tag or input
   prepare:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.version.outputs.version }}
       is_prerelease: ${{ steps.version.outputs.is_prerelease }}
@@ -61,7 +61,7 @@ jobs:
 
   # Build and push container images
   build-container:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     needs: [prepare]
     if: always() && needs.prepare.result == 'success'
     permissions:
@@ -206,7 +206,7 @@ jobs:
 
   # Create GitHub Release
   create-release:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     needs: [prepare, build-container]
     if: always() && needs.build-container.result == 'success'
     permissions:
@@ -301,7 +301,7 @@ jobs:
 
   # Summary job
   summary:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     needs: [prepare, build-container, create-release]
     if: always()
 
