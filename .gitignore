@@ -6,6 +6,14 @@ cover.out
 /.vendor-new
 .DS_Store
 
+# Binaries
+*.xpkg
+/cluster/images/provider-azuredevops/bin/
+bin/
+*.exe
+*.so
+*.dylib
+
 # ignore IDE folders
 .vscode/
 .idea/

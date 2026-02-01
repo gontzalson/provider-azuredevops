@@ -1,0 +1,46 @@
+---
+apiVersion: git.azuredevops.crossplane.io/v1alpha1
+kind: Repository
+metadata:
+  name: infrastructure-repo
+  namespace: azure-devops-example
+  labels:
+    example: project-setup
+spec:
+  forProvider:
+    projectIdRef:
+      name: my-platform-project
+    name: infrastructure
+    initialization:
+      initType: Clean
+      sourceType: Git
+      sourceUrl: ""
+  providerConfigRef:
+    name: default
+---
+apiVersion: branchpolicy.azuredevops.crossplane.io/v1alpha1
+kind: MinReviewers
+metadata:
+  name: main-branch-review-policy
+  namespace: azure-devops-example
+  labels:
+    example: project-setup
+spec:
+  forProvider:
+    projectIdRef:
+      name: my-platform-project
+    enabled: true
+    blocking: true
+    settings:
+      reviewerCount: 2
+      submitterCanVote: false
+      lastPusherCannotApprove: true
+      allowCompletionWithRejectsOrWaits: false
+      onPushResetApprovedVotes: true
+      scope:
+        - repositoryIdRef:
+            name: infrastructure-repo
+          refName: refs/heads/main
+          matchType: Exact
+  providerConfigRef:
+    name: default

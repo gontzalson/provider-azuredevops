@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: azure-devops-example
+---
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  name: my-platform-project
+  namespace: azure-devops-example
+  labels:
+    example: project-setup
+spec:
+  forProvider:
+    name: My Platform Project
+    description: Infrastructure project managed by Crossplane
+    visibility: private
+    versionControl: Git
+    workItemTemplate: Agile
+  providerConfigRef:
+    name: default
