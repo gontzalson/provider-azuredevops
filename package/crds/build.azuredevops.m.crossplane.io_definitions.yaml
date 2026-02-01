@@ -1,0 +1,1524 @@
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
+  name: definitions.build.azuredevops.m.crossplane.io
+spec:
+  group: build.azuredevops.m.crossplane.io
+  names:
+    categories:
+    - crossplane
+    - managed
+    - azuredevops
+    kind: Definition
+    listKind: DefinitionList
+    plural: definitions
+    singular: definition
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.conditions[?(@.type=='Synced')].status
+      name: SYNCED
+      type: string
+    - jsonPath: .status.conditions[?(@.type=='Ready')].status
+      name: READY
+      type: string
+    - jsonPath: .metadata.annotations.crossplane\.io/external-name
+      name: EXTERNAL-NAME
+      type: string
+    - jsonPath: .metadata.creationTimestamp
+      name: AGE
+      type: date
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: Definition is the Schema for the Definitions API. Manages a Build
+          Definition within Azure DevOps organization.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: DefinitionSpec defines the desired state of Definition
+            properties:
+              forProvider:
+                properties:
+                  agentPoolName:
+                    description: The agent pool that should execute the build. Defaults
+                      to Azure Pipelines.
+                    type: string
+                  ciTrigger:
+                    description: Continuous Integration trigger.
+                    items:
+                      properties:
+                        override:
+                          description: Override the azure-pipeline file and use a
+                            this configuration for all builds.
+                          items:
+                            properties:
+                              batch:
+                                description: If you set batch to true, when a pipeline
+                                  is running, the system waits until the run is completed,
+                                  then starts another run with all changes that have
+                                  not yet been built. Defaults to true.
+                                type: boolean
+                              branchFilter:
+                                description: 'block supports the following:'
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              maxConcurrentBuildsPerBranch:
+                                description: The number of max builds per branch.
+                                  Defaults to 1.
+                                type: number
+                              pathFilter:
+                                description: Specify file paths to include or exclude.
+                                  Note that the wildcard syntax is different between
+                                  branches/tags and file paths.
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              pollingInterval:
+                                description: How often the external repository is
+                                  polled. Defaults to 0.
+                                type: number
+                            type: object
+                          type: array
+                        useYaml:
+                          description: Use the azure-pipeline file for the build configuration.
+                            Defaults to false.
+                          type: boolean
+                      type: object
+                    type: array
+                  features:
+                    description: A features blocks as documented below.
+                    items:
+                      properties:
+                        skipFirstRun:
+                          description: Trigger the pipeline to run after the creation.
+                            Defaults to true.
+                          type: boolean
+                      type: object
+                    type: array
+                  name:
+                    description: The name of the build definition.
+                    type: string
+                  path:
+                    description: The folder path of the build definition.
+                    type: string
+                  projectId:
+                    description: The project ID or project name.
+                    type: string
+                  pullRequestTrigger:
+                    description: Pull Request Integration trigger.
+                    items:
+                      properties:
+                        commentRequired:
+                          type: string
+                        forks:
+                          description: Set permissions for Forked repositories.
+                          items:
+                            properties:
+                              enabled:
+                                description: Build pull requests from forks of this
+                                  repository.
+                                type: boolean
+                              shareSecrets:
+                                description: Make secrets available to builds of forks.
+                                type: boolean
+                            type: object
+                          type: array
+                        initialBranch:
+                          description: When use_yaml is true set this to the name
+                            of the branch that the azure-pipelines.yml exists on.
+                          type: string
+                        override:
+                          description: Override the azure-pipeline file and use this
+                            configuration for all builds.
+                          items:
+                            properties:
+                              autoCancel:
+                                description: . Defaults to true.
+                                type: boolean
+                              branchFilter:
+                                description: 'block supports the following:'
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              pathFilter:
+                                description: Specify file paths to include or exclude.
+                                  Note that the wildcard syntax is different between
+                                  branches/tags and file paths.
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                        useYaml:
+                          description: Use the azure-pipeline file for the build configuration.
+                            Defaults to false.
+                          type: boolean
+                      type: object
+                    type: array
+                  queueStatus:
+                    description: 'The queue status of the build definition. Valid
+                      values: enabled or paused or disabled. Defaults to enabled.'
+                    type: string
+                  repository:
+                    description: A repository block as documented below.
+                    items:
+                      properties:
+                        branchName:
+                          description: The branch name for which builds are triggered.
+                            Defaults to master.
+                          type: string
+                        githubEnterpriseUrl:
+                          description: The Github Enterprise URL. Used if repo_type
+                            is GithubEnterprise.
+                          type: string
+                        repoId:
+                          description: The id of the repository. For TfsGit repos,
+                            this is simply the ID of the repository. For Github repos,
+                            this will take the form of <GitHub Org>/<Repo Name>. For
+                            Bitbucket repos, this will take the form of <Workspace
+                            ID>/<Repo Name>.
+                          type: string
+                        repoType:
+                          description: 'The repository type. Valid values: GitHub
+                            or TfsGit or Bitbucket or GitHub Enterprise. Defaults
+                            to GitHub. If repo_type is GitHubEnterprise, must use
+                            existing project and GitHub Enterprise service connection.'
+                          type: string
+                        reportBuildStatus:
+                          description: Report build status. Default is true.
+                          type: boolean
+                        serviceConnectionId:
+                          description: The service connection ID. Used if the repo_type
+                            is GitHub or GitHubEnterprise.
+                          type: string
+                        ymlPath:
+                          description: The path of the Yaml file describing the build
+                            definition.
+                          type: string
+                      type: object
+                    type: array
+                  schedules:
+                    items:
+                      properties:
+                        branchFilter:
+                          description: 'block supports the following:'
+                          items:
+                            properties:
+                              exclude:
+                                description: List of branch patterns to exclude.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: set
+                              include:
+                                description: List of branch patterns to include.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: set
+                            type: object
+                          type: array
+                        daysToBuild:
+                          description: ':  When to build. Valid values: Mon, Tue,
+                            Wed, Thu, Fri, Sat, Sun.'
+                          items:
+                            type: string
+                          type: array
+                        scheduleOnlyWithChanges:
+                          description: ':  Schedule builds if the source or pipeline
+                            has changed. Defaults to true.'
+                          type: boolean
+                        startHours:
+                          description: ':  Build start hour. Defaults to 0. Valid
+                            values: 0 ~ 23.'
+                          type: number
+                        startMinutes:
+                          description: ':  Build start minute. Defaults to 0. Valid
+                            values: 0 ~ 59.'
+                          type: number
+                        timeZone:
+                          description: |-
+                            12:00) International Date Line West,
+                            (UTC-11:00) Coordinated Universal Time-11,
+                            (UTC-10:00) Aleutian Islands,
+                            (UTC-10:00) Hawaii,
+                            (UTC-09:30) Marquesas Islands,
+                            (UTC-09:00) Alaska,
+                            (UTC-09:00) Coordinated Universal Time-09,
+                            (UTC-08:00) Baja California,
+                            (UTC-08:00) Coordinated Universal Time-08,
+                            (UTC-08:00) Pacific Time (US &Canada),
+                            (UTC-07:00) Arizona,
+                            (UTC-07:00) Chihuahua, La Paz, Mazatlan,
+                            (UTC-07:00) Mountain Time (US &Canada),
+                            (UTC-07:00) Yukon,
+                            (UTC-06:00) Central America,
+                            (UTC-06:00) Central Time (US &Canada),
+                            (UTC-06:00) Easter Island,
+                            (UTC-06:00) Guadalajara, Mexico City, Monterrey,
+                            (UTC-06:00) Saskatchewan,
+                            (UTC-05:00) Bogota, Lima, Quito, Rio Branco,
+                            (UTC-05:00) Chetumal,
+                            (UTC-05:00) Eastern Time (US &Canada),
+                            (UTC-05:00) Haiti,
+                            (UTC-05:00) Havana,
+                            (UTC-05:00) Indiana (East),
+                            (UTC-05:00) Turks and Caicos,
+                            (UTC-04:00) Asuncion,
+                            (UTC-04:00) Atlantic Time (Canada),
+                            (UTC-04:00) Caracas,
+                            (UTC-04:00) Cuiaba,
+                            (UTC-04:00) Georgetown, La Paz, Manaus, San Juan,
+                            (UTC-04:00) Santiago,
+                            (UTC-03:30) Newfoundland,
+                            (UTC-03:00) Araguaina,
+                            (UTC-03:00) Brasilia,
+                            (UTC-03:00) Cayenne, Fortaleza,
+                            (UTC-03:00) City of Buenos Aires,
+                            (UTC-03:00) Greenland,
+                            (UTC-03:00) Montevideo,
+                            (UTC-03:00) Punta Arenas,
+                            (UTC-03:00) Saint Pierre and Miquelon,
+                            (UTC-03:00) Salvador,
+                            (UTC-02:00) Coordinated Universal Time-02,
+                            (UTC-02:00) Mid-Atlantic - Old,
+                            (UTC-01:00) Azores,
+                            (UTC-01:00) Cabo Verde Is.,
+                            (UTC) Coordinated Universal Time,
+                            (UTC+00:00) Dublin, Edinburgh, Lisbon, London,
+                            (UTC+00:00) Monrovia, Reykjavik,
+                            (UTC+00:00) Sao Tome,
+                            (UTC+01:00) Casablanca,
+                            (UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna,
+                            (UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague,
+                            (UTC+01:00) Brussels, Copenhagen, Madrid, Paris,
+                            (UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb,
+                            (UTC+01:00) West Central Africa,
+                            (UTC+02:00) Amman,
+                            (UTC+02:00) Athens, Bucharest,
+                            (UTC+02:00) Beirut,
+                            (UTC+02:00) Cairo,
+                            (UTC+02:00) Chisinau,
+                            (UTC+02:00) Damascus,
+                            (UTC+02:00) Gaza, Hebron,
+                            (UTC+02:00) Harare, Pretoria,
+                            (UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius,
+                            (UTC+02:00) Jerusalem,
+                            (UTC+02:00) Juba,
+                            (UTC+02:00) Kaliningrad,
+                            (UTC+02:00) Khartoum,
+                            (UTC+02:00) Tripoli,
+                            (UTC+02:00) Windhoek,
+                            (UTC+03:00) Baghdad,
+                            (UTC+03:00) Istanbul,
+                            (UTC+03:00) Kuwait, Riyadh,
+                            (UTC+03:00) Minsk,
+                            (UTC+03:00) Moscow, St. Petersburg,
+                            (UTC+03:00) Nairobi,
+                            (UTC+03:00) Volgograd,
+                            (UTC+03:30) Tehran,
+                            (UTC+04:00) Abu Dhabi, Muscat,
+                            (UTC+04:00) Astrakhan, Ulyanovsk,
+                            (UTC+04:00) Baku,
+                            (UTC+04:00) Izhevsk, Samara,
+                            (UTC+04:00) Port Louis,
+                            (UTC+04:00) Saratov,
+                            (UTC+04:00) Tbilisi,
+                            (UTC+04:00) Yerevan,
+                            (UTC+04:30) Kabul,
+                            (UTC+05:00) Ashgabat, Tashkent,
+                            (UTC+05:00) Ekaterinburg,
+                            (UTC+05:00) Islamabad, Karachi,
+                            (UTC+05:00) Qyzylorda,
+                            (UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi,
+                            (UTC+05:30) Sri Jayawardenepura,
+                            (UTC+05:45) Kathmandu,
+                            (UTC+06:00) Astana,
+                            (UTC+06:00) Dhaka,
+                            (UTC+06:00) Omsk,
+                            (UTC+06:30) Yangon (Rangoon),
+                            (UTC+07:00) Bangkok, Hanoi, Jakarta,
+                            (UTC+07:00) Barnaul, Gorno-Altaysk,
+                            (UTC+07:00) Hovd,
+                            (UTC+07:00) Krasnoyarsk,
+                            (UTC+07:00) Novosibirsk,
+                            (UTC+07:00) Tomsk,
+                            (UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi,
+                            (UTC+08:00) Irkutsk,
+                            (UTC+08:00) Kuala Lumpur, Singapore,
+                            (UTC+08:00) Perth,
+                            (UTC+08:00) Taipei,
+                            (UTC+08:00) Ulaanbaatar,
+                            (UTC+08:45) Eucla,
+                            (UTC+09:00) Chita,
+                            (UTC+09:00) Osaka, Sapporo, Tokyo,
+                            (UTC+09:00) Pyongyang,
+                            (UTC+09:00) Seoul,
+                            (UTC+09:00) Yakutsk,
+                            (UTC+09:30) Adelaide,
+                            (UTC+09:30) Darwin,
+                            (UTC+10:00) Brisbane,
+                            (UTC+10:00) Canberra, Melbourne, Sydney,
+                            (UTC+10:00) Guam, Port Moresby,
+                            (UTC+10:00) Hobart,
+                            (UTC+10:00) Vladivostok,
+                            (UTC+10:30) Lord Howe Island,
+                            (UTC+11:00) Bougainville Island,
+                            (UTC+11:00) Chokurdakh,
+                            (UTC+11:00) Magadan,
+                            (UTC+11:00) Norfolk Island,
+                            (UTC+11:00) Sakhalin,
+                            (UTC+11:00) Solomon Is., New Caledonia,
+                            (UTC+12:00) Anadyr, Petropavlovsk-Kamchatsky,
+                            (UTC+12:00) Auckland, Wellington,
+                            (UTC+12:00) Coordinated Universal Time+12,
+                            (UTC+12:00) Fiji,
+                            (UTC+12:00) Petropavlovsk-Kamchatsky - Old,
+                            (UTC+12:45) Chatham Islands,
+                            (UTC+13:00) Coordinated Universal Time+13,
+                            (UTC+13:00) Nuku'alofa,
+                            (UTC+13:00) Samoa,
+                            (UTC+14:00) Kiritimati Island.
+                          type: string
+                      type: object
+                    type: array
+                  variable:
+                    description: A list of variable blocks, as documented below.
+                    items:
+                      properties:
+                        allowOverride:
+                          description: True if the variable can be overridden. Defaults
+                            to true.
+                          type: boolean
+                        isSecret:
+                          description: True if the variable is a secret. Defaults
+                            to false.
+                          type: boolean
+                        name:
+                          description: The name of the variable.
+                          type: string
+                        secretValueSecretRef:
+                          description: The secret value of the variable. Used when
+                            is_secret set to true.
+                          properties:
+                            key:
+                              type: string
+                            name:
+                              description: Name of the secret.
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        value:
+                          description: The value of the variable.
+                          type: string
+                      type: object
+                    type: array
+                  variableGroups:
+                    description: A list of variable group IDs (integers) to link to
+                      the build definition.
+                    items:
+                      type: number
+                    type: array
+                    x-kubernetes-list-type: set
+                type: object
+              initProvider:
+                description: |-
+                  THIS IS A BETA FIELD. It will be honored
+                  unless the Management Policies feature flag is disabled.
+                  InitProvider holds the same fields as ForProvider, with the exception
+                  of Identifier and other resource reference fields. The fields that are
+                  in InitProvider are merged into ForProvider when the resource is created.
+                  The same fields are also added to the terraform ignore_changes hook, to
+                  avoid updating them after creation. This is useful for fields that are
+                  required on creation, but we do not desire to update them after creation,
+                  for example because of an external controller is managing them, like an
+                  autoscaler.
+                properties:
+                  agentPoolName:
+                    description: The agent pool that should execute the build. Defaults
+                      to Azure Pipelines.
+                    type: string
+                  ciTrigger:
+                    description: Continuous Integration trigger.
+                    items:
+                      properties:
+                        override:
+                          description: Override the azure-pipeline file and use a
+                            this configuration for all builds.
+                          items:
+                            properties:
+                              batch:
+                                description: If you set batch to true, when a pipeline
+                                  is running, the system waits until the run is completed,
+                                  then starts another run with all changes that have
+                                  not yet been built. Defaults to true.
+                                type: boolean
+                              branchFilter:
+                                description: 'block supports the following:'
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              maxConcurrentBuildsPerBranch:
+                                description: The number of max builds per branch.
+                                  Defaults to 1.
+                                type: number
+                              pathFilter:
+                                description: Specify file paths to include or exclude.
+                                  Note that the wildcard syntax is different between
+                                  branches/tags and file paths.
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              pollingInterval:
+                                description: How often the external repository is
+                                  polled. Defaults to 0.
+                                type: number
+                            type: object
+                          type: array
+                        useYaml:
+                          description: Use the azure-pipeline file for the build configuration.
+                            Defaults to false.
+                          type: boolean
+                      type: object
+                    type: array
+                  features:
+                    description: A features blocks as documented below.
+                    items:
+                      properties:
+                        skipFirstRun:
+                          description: Trigger the pipeline to run after the creation.
+                            Defaults to true.
+                          type: boolean
+                      type: object
+                    type: array
+                  name:
+                    description: The name of the build definition.
+                    type: string
+                  path:
+                    description: The folder path of the build definition.
+                    type: string
+                  projectId:
+                    description: The project ID or project name.
+                    type: string
+                  pullRequestTrigger:
+                    description: Pull Request Integration trigger.
+                    items:
+                      properties:
+                        commentRequired:
+                          type: string
+                        forks:
+                          description: Set permissions for Forked repositories.
+                          items:
+                            properties:
+                              enabled:
+                                description: Build pull requests from forks of this
+                                  repository.
+                                type: boolean
+                              shareSecrets:
+                                description: Make secrets available to builds of forks.
+                                type: boolean
+                            type: object
+                          type: array
+                        initialBranch:
+                          description: When use_yaml is true set this to the name
+                            of the branch that the azure-pipelines.yml exists on.
+                          type: string
+                        override:
+                          description: Override the azure-pipeline file and use this
+                            configuration for all builds.
+                          items:
+                            properties:
+                              autoCancel:
+                                description: . Defaults to true.
+                                type: boolean
+                              branchFilter:
+                                description: 'block supports the following:'
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              pathFilter:
+                                description: Specify file paths to include or exclude.
+                                  Note that the wildcard syntax is different between
+                                  branches/tags and file paths.
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                        useYaml:
+                          description: Use the azure-pipeline file for the build configuration.
+                            Defaults to false.
+                          type: boolean
+                      type: object
+                    type: array
+                  queueStatus:
+                    description: 'The queue status of the build definition. Valid
+                      values: enabled or paused or disabled. Defaults to enabled.'
+                    type: string
+                  repository:
+                    description: A repository block as documented below.
+                    items:
+                      properties:
+                        branchName:
+                          description: The branch name for which builds are triggered.
+                            Defaults to master.
+                          type: string
+                        githubEnterpriseUrl:
+                          description: The Github Enterprise URL. Used if repo_type
+                            is GithubEnterprise.
+                          type: string
+                        repoId:
+                          description: The id of the repository. For TfsGit repos,
+                            this is simply the ID of the repository. For Github repos,
+                            this will take the form of <GitHub Org>/<Repo Name>. For
+                            Bitbucket repos, this will take the form of <Workspace
+                            ID>/<Repo Name>.
+                          type: string
+                        repoType:
+                          description: 'The repository type. Valid values: GitHub
+                            or TfsGit or Bitbucket or GitHub Enterprise. Defaults
+                            to GitHub. If repo_type is GitHubEnterprise, must use
+                            existing project and GitHub Enterprise service connection.'
+                          type: string
+                        reportBuildStatus:
+                          description: Report build status. Default is true.
+                          type: boolean
+                        serviceConnectionId:
+                          description: The service connection ID. Used if the repo_type
+                            is GitHub or GitHubEnterprise.
+                          type: string
+                        ymlPath:
+                          description: The path of the Yaml file describing the build
+                            definition.
+                          type: string
+                      type: object
+                    type: array
+                  schedules:
+                    items:
+                      properties:
+                        branchFilter:
+                          description: 'block supports the following:'
+                          items:
+                            properties:
+                              exclude:
+                                description: List of branch patterns to exclude.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: set
+                              include:
+                                description: List of branch patterns to include.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: set
+                            type: object
+                          type: array
+                        daysToBuild:
+                          description: ':  When to build. Valid values: Mon, Tue,
+                            Wed, Thu, Fri, Sat, Sun.'
+                          items:
+                            type: string
+                          type: array
+                        scheduleOnlyWithChanges:
+                          description: ':  Schedule builds if the source or pipeline
+                            has changed. Defaults to true.'
+                          type: boolean
+                        startHours:
+                          description: ':  Build start hour. Defaults to 0. Valid
+                            values: 0 ~ 23.'
+                          type: number
+                        startMinutes:
+                          description: ':  Build start minute. Defaults to 0. Valid
+                            values: 0 ~ 59.'
+                          type: number
+                        timeZone:
+                          description: |-
+                            12:00) International Date Line West,
+                            (UTC-11:00) Coordinated Universal Time-11,
+                            (UTC-10:00) Aleutian Islands,
+                            (UTC-10:00) Hawaii,
+                            (UTC-09:30) Marquesas Islands,
+                            (UTC-09:00) Alaska,
+                            (UTC-09:00) Coordinated Universal Time-09,
+                            (UTC-08:00) Baja California,
+                            (UTC-08:00) Coordinated Universal Time-08,
+                            (UTC-08:00) Pacific Time (US &Canada),
+                            (UTC-07:00) Arizona,
+                            (UTC-07:00) Chihuahua, La Paz, Mazatlan,
+                            (UTC-07:00) Mountain Time (US &Canada),
+                            (UTC-07:00) Yukon,
+                            (UTC-06:00) Central America,
+                            (UTC-06:00) Central Time (US &Canada),
+                            (UTC-06:00) Easter Island,
+                            (UTC-06:00) Guadalajara, Mexico City, Monterrey,
+                            (UTC-06:00) Saskatchewan,
+                            (UTC-05:00) Bogota, Lima, Quito, Rio Branco,
+                            (UTC-05:00) Chetumal,
+                            (UTC-05:00) Eastern Time (US &Canada),
+                            (UTC-05:00) Haiti,
+                            (UTC-05:00) Havana,
+                            (UTC-05:00) Indiana (East),
+                            (UTC-05:00) Turks and Caicos,
+                            (UTC-04:00) Asuncion,
+                            (UTC-04:00) Atlantic Time (Canada),
+                            (UTC-04:00) Caracas,
+                            (UTC-04:00) Cuiaba,
+                            (UTC-04:00) Georgetown, La Paz, Manaus, San Juan,
+                            (UTC-04:00) Santiago,
+                            (UTC-03:30) Newfoundland,
+                            (UTC-03:00) Araguaina,
+                            (UTC-03:00) Brasilia,
+                            (UTC-03:00) Cayenne, Fortaleza,
+                            (UTC-03:00) City of Buenos Aires,
+                            (UTC-03:00) Greenland,
+                            (UTC-03:00) Montevideo,
+                            (UTC-03:00) Punta Arenas,
+                            (UTC-03:00) Saint Pierre and Miquelon,
+                            (UTC-03:00) Salvador,
+                            (UTC-02:00) Coordinated Universal Time-02,
+                            (UTC-02:00) Mid-Atlantic - Old,
+                            (UTC-01:00) Azores,
+                            (UTC-01:00) Cabo Verde Is.,
+                            (UTC) Coordinated Universal Time,
+                            (UTC+00:00) Dublin, Edinburgh, Lisbon, London,
+                            (UTC+00:00) Monrovia, Reykjavik,
+                            (UTC+00:00) Sao Tome,
+                            (UTC+01:00) Casablanca,
+                            (UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna,
+                            (UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague,
+                            (UTC+01:00) Brussels, Copenhagen, Madrid, Paris,
+                            (UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb,
+                            (UTC+01:00) West Central Africa,
+                            (UTC+02:00) Amman,
+                            (UTC+02:00) Athens, Bucharest,
+                            (UTC+02:00) Beirut,
+                            (UTC+02:00) Cairo,
+                            (UTC+02:00) Chisinau,
+                            (UTC+02:00) Damascus,
+                            (UTC+02:00) Gaza, Hebron,
+                            (UTC+02:00) Harare, Pretoria,
+                            (UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius,
+                            (UTC+02:00) Jerusalem,
+                            (UTC+02:00) Juba,
+                            (UTC+02:00) Kaliningrad,
+                            (UTC+02:00) Khartoum,
+                            (UTC+02:00) Tripoli,
+                            (UTC+02:00) Windhoek,
+                            (UTC+03:00) Baghdad,
+                            (UTC+03:00) Istanbul,
+                            (UTC+03:00) Kuwait, Riyadh,
+                            (UTC+03:00) Minsk,
+                            (UTC+03:00) Moscow, St. Petersburg,
+                            (UTC+03:00) Nairobi,
+                            (UTC+03:00) Volgograd,
+                            (UTC+03:30) Tehran,
+                            (UTC+04:00) Abu Dhabi, Muscat,
+                            (UTC+04:00) Astrakhan, Ulyanovsk,
+                            (UTC+04:00) Baku,
+                            (UTC+04:00) Izhevsk, Samara,
+                            (UTC+04:00) Port Louis,
+                            (UTC+04:00) Saratov,
+                            (UTC+04:00) Tbilisi,
+                            (UTC+04:00) Yerevan,
+                            (UTC+04:30) Kabul,
+                            (UTC+05:00) Ashgabat, Tashkent,
+                            (UTC+05:00) Ekaterinburg,
+                            (UTC+05:00) Islamabad, Karachi,
+                            (UTC+05:00) Qyzylorda,
+                            (UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi,
+                            (UTC+05:30) Sri Jayawardenepura,
+                            (UTC+05:45) Kathmandu,
+                            (UTC+06:00) Astana,
+                            (UTC+06:00) Dhaka,
+                            (UTC+06:00) Omsk,
+                            (UTC+06:30) Yangon (Rangoon),
+                            (UTC+07:00) Bangkok, Hanoi, Jakarta,
+                            (UTC+07:00) Barnaul, Gorno-Altaysk,
+                            (UTC+07:00) Hovd,
+                            (UTC+07:00) Krasnoyarsk,
+                            (UTC+07:00) Novosibirsk,
+                            (UTC+07:00) Tomsk,
+                            (UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi,
+                            (UTC+08:00) Irkutsk,
+                            (UTC+08:00) Kuala Lumpur, Singapore,
+                            (UTC+08:00) Perth,
+                            (UTC+08:00) Taipei,
+                            (UTC+08:00) Ulaanbaatar,
+                            (UTC+08:45) Eucla,
+                            (UTC+09:00) Chita,
+                            (UTC+09:00) Osaka, Sapporo, Tokyo,
+                            (UTC+09:00) Pyongyang,
+                            (UTC+09:00) Seoul,
+                            (UTC+09:00) Yakutsk,
+                            (UTC+09:30) Adelaide,
+                            (UTC+09:30) Darwin,
+                            (UTC+10:00) Brisbane,
+                            (UTC+10:00) Canberra, Melbourne, Sydney,
+                            (UTC+10:00) Guam, Port Moresby,
+                            (UTC+10:00) Hobart,
+                            (UTC+10:00) Vladivostok,
+                            (UTC+10:30) Lord Howe Island,
+                            (UTC+11:00) Bougainville Island,
+                            (UTC+11:00) Chokurdakh,
+                            (UTC+11:00) Magadan,
+                            (UTC+11:00) Norfolk Island,
+                            (UTC+11:00) Sakhalin,
+                            (UTC+11:00) Solomon Is., New Caledonia,
+                            (UTC+12:00) Anadyr, Petropavlovsk-Kamchatsky,
+                            (UTC+12:00) Auckland, Wellington,
+                            (UTC+12:00) Coordinated Universal Time+12,
+                            (UTC+12:00) Fiji,
+                            (UTC+12:00) Petropavlovsk-Kamchatsky - Old,
+                            (UTC+12:45) Chatham Islands,
+                            (UTC+13:00) Coordinated Universal Time+13,
+                            (UTC+13:00) Nuku'alofa,
+                            (UTC+13:00) Samoa,
+                            (UTC+14:00) Kiritimati Island.
+                          type: string
+                      type: object
+                    type: array
+                  variable:
+                    description: A list of variable blocks, as documented below.
+                    items:
+                      properties:
+                        allowOverride:
+                          description: True if the variable can be overridden. Defaults
+                            to true.
+                          type: boolean
+                        isSecret:
+                          description: True if the variable is a secret. Defaults
+                            to false.
+                          type: boolean
+                        name:
+                          description: The name of the variable.
+                          type: string
+                        secretValueSecretRef:
+                          description: The secret value of the variable. Used when
+                            is_secret set to true.
+                          properties:
+                            key:
+                              type: string
+                            name:
+                              description: Name of the secret.
+                              type: string
+                          required:
+                          - key
+                          - name
+                          type: object
+                        value:
+                          description: The value of the variable.
+                          type: string
+                      type: object
+                    type: array
+                  variableGroups:
+                    description: A list of variable group IDs (integers) to link to
+                      the build definition.
+                    items:
+                      type: number
+                    type: array
+                    x-kubernetes-list-type: set
+                type: object
+              managementPolicies:
+                default:
+                - '*'
+                description: |-
+                  THIS IS A BETA FIELD. It is on by default but can be opted out
+                  through a Crossplane feature flag.
+                  ManagementPolicies specify the array of actions Crossplane is allowed to
+                  take on the managed and external resources.
+                  See the design doc for more information: https://github.com/crossplane/crossplane/blob/499895a25d1a1a0ba1604944ef98ac7a1a71f197/design/design-doc-observe-only-resources.md?plain=1#L223
+                  and this one: https://github.com/crossplane/crossplane/blob/444267e84783136daa93568b364a5f01228cacbe/design/one-pager-ignore-changes.md
+                items:
+                  description: |-
+                    A ManagementAction represents an action that the Crossplane controllers
+                    can take on an external resource.
+                  enum:
+                  - Observe
+                  - Create
+                  - Update
+                  - Delete
+                  - LateInitialize
+                  - '*'
+                  type: string
+                type: array
+              providerConfigRef:
+                default:
+                  kind: ClusterProviderConfig
+                  name: default
+                description: |-
+                  ProviderConfigReference specifies how the provider that will be used to
+                  create, observe, update, and delete this managed resource should be
+                  configured.
+                properties:
+                  kind:
+                    description: Kind of the referenced object.
+                    type: string
+                  name:
+                    description: Name of the referenced object.
+                    type: string
+                required:
+                - kind
+                - name
+                type: object
+              writeConnectionSecretToRef:
+                description: |-
+                  WriteConnectionSecretToReference specifies the namespace and name of a
+                  Secret to which any connection details for this managed resource should
+                  be written. Connection details frequently include the endpoint, username,
+                  and password required to connect to the managed resource.
+                properties:
+                  name:
+                    description: Name of the secret.
+                    type: string
+                required:
+                - name
+                type: object
+            required:
+            - forProvider
+            type: object
+            x-kubernetes-validations:
+            - message: spec.forProvider.name is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.name)
+                || (has(self.initProvider) && has(self.initProvider.name))'
+            - message: spec.forProvider.projectId is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.projectId)
+                || (has(self.initProvider) && has(self.initProvider.projectId))'
+            - message: spec.forProvider.repository is a required parameter
+              rule: '!(''*'' in self.managementPolicies || ''Create'' in self.managementPolicies
+                || ''Update'' in self.managementPolicies) || has(self.forProvider.repository)
+                || (has(self.initProvider) && has(self.initProvider.repository))'
+          status:
+            description: DefinitionStatus defines the observed state of Definition.
+            properties:
+              atProvider:
+                properties:
+                  agentPoolName:
+                    description: The agent pool that should execute the build. Defaults
+                      to Azure Pipelines.
+                    type: string
+                  ciTrigger:
+                    description: Continuous Integration trigger.
+                    items:
+                      properties:
+                        override:
+                          description: Override the azure-pipeline file and use a
+                            this configuration for all builds.
+                          items:
+                            properties:
+                              batch:
+                                description: If you set batch to true, when a pipeline
+                                  is running, the system waits until the run is completed,
+                                  then starts another run with all changes that have
+                                  not yet been built. Defaults to true.
+                                type: boolean
+                              branchFilter:
+                                description: 'block supports the following:'
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              maxConcurrentBuildsPerBranch:
+                                description: The number of max builds per branch.
+                                  Defaults to 1.
+                                type: number
+                              pathFilter:
+                                description: Specify file paths to include or exclude.
+                                  Note that the wildcard syntax is different between
+                                  branches/tags and file paths.
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              pollingInterval:
+                                description: How often the external repository is
+                                  polled. Defaults to 0.
+                                type: number
+                              pollingJobId:
+                                description: (Computed) This is the ID of the polling
+                                  job that polls the external repository. Once the
+                                  build definition is saved/updated, this value is
+                                  set.
+                                type: string
+                            type: object
+                          type: array
+                        useYaml:
+                          description: Use the azure-pipeline file for the build configuration.
+                            Defaults to false.
+                          type: boolean
+                      type: object
+                    type: array
+                  features:
+                    description: A features blocks as documented below.
+                    items:
+                      properties:
+                        skipFirstRun:
+                          description: Trigger the pipeline to run after the creation.
+                            Defaults to true.
+                          type: boolean
+                      type: object
+                    type: array
+                  id:
+                    description: The ID of the build definition
+                    type: string
+                  name:
+                    description: The name of the build definition.
+                    type: string
+                  path:
+                    description: The folder path of the build definition.
+                    type: string
+                  projectId:
+                    description: The project ID or project name.
+                    type: string
+                  pullRequestTrigger:
+                    description: Pull Request Integration trigger.
+                    items:
+                      properties:
+                        commentRequired:
+                          type: string
+                        forks:
+                          description: Set permissions for Forked repositories.
+                          items:
+                            properties:
+                              enabled:
+                                description: Build pull requests from forks of this
+                                  repository.
+                                type: boolean
+                              shareSecrets:
+                                description: Make secrets available to builds of forks.
+                                type: boolean
+                            type: object
+                          type: array
+                        initialBranch:
+                          description: When use_yaml is true set this to the name
+                            of the branch that the azure-pipelines.yml exists on.
+                          type: string
+                        override:
+                          description: Override the azure-pipeline file and use this
+                            configuration for all builds.
+                          items:
+                            properties:
+                              autoCancel:
+                                description: . Defaults to true.
+                                type: boolean
+                              branchFilter:
+                                description: 'block supports the following:'
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                              pathFilter:
+                                description: Specify file paths to include or exclude.
+                                  Note that the wildcard syntax is different between
+                                  branches/tags and file paths.
+                                items:
+                                  properties:
+                                    exclude:
+                                      description: List of branch patterns to exclude.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                    include:
+                                      description: List of branch patterns to include.
+                                      items:
+                                        type: string
+                                      type: array
+                                      x-kubernetes-list-type: set
+                                  type: object
+                                type: array
+                            type: object
+                          type: array
+                        useYaml:
+                          description: Use the azure-pipeline file for the build configuration.
+                            Defaults to false.
+                          type: boolean
+                      type: object
+                    type: array
+                  queueStatus:
+                    description: 'The queue status of the build definition. Valid
+                      values: enabled or paused or disabled. Defaults to enabled.'
+                    type: string
+                  repository:
+                    description: A repository block as documented below.
+                    items:
+                      properties:
+                        branchName:
+                          description: The branch name for which builds are triggered.
+                            Defaults to master.
+                          type: string
+                        githubEnterpriseUrl:
+                          description: The Github Enterprise URL. Used if repo_type
+                            is GithubEnterprise.
+                          type: string
+                        repoId:
+                          description: The id of the repository. For TfsGit repos,
+                            this is simply the ID of the repository. For Github repos,
+                            this will take the form of <GitHub Org>/<Repo Name>. For
+                            Bitbucket repos, this will take the form of <Workspace
+                            ID>/<Repo Name>.
+                          type: string
+                        repoType:
+                          description: 'The repository type. Valid values: GitHub
+                            or TfsGit or Bitbucket or GitHub Enterprise. Defaults
+                            to GitHub. If repo_type is GitHubEnterprise, must use
+                            existing project and GitHub Enterprise service connection.'
+                          type: string
+                        reportBuildStatus:
+                          description: Report build status. Default is true.
+                          type: boolean
+                        serviceConnectionId:
+                          description: The service connection ID. Used if the repo_type
+                            is GitHub or GitHubEnterprise.
+                          type: string
+                        ymlPath:
+                          description: The path of the Yaml file describing the build
+                            definition.
+                          type: string
+                      type: object
+                    type: array
+                  revision:
+                    description: The revision of the build definition
+                    type: number
+                  schedules:
+                    items:
+                      properties:
+                        branchFilter:
+                          description: 'block supports the following:'
+                          items:
+                            properties:
+                              exclude:
+                                description: List of branch patterns to exclude.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: set
+                              include:
+                                description: List of branch patterns to include.
+                                items:
+                                  type: string
+                                type: array
+                                x-kubernetes-list-type: set
+                            type: object
+                          type: array
+                        daysToBuild:
+                          description: ':  When to build. Valid values: Mon, Tue,
+                            Wed, Thu, Fri, Sat, Sun.'
+                          items:
+                            type: string
+                          type: array
+                        scheduleJobId:
+                          description: The ID of the schedule job
+                          type: string
+                        scheduleOnlyWithChanges:
+                          description: ':  Schedule builds if the source or pipeline
+                            has changed. Defaults to true.'
+                          type: boolean
+                        startHours:
+                          description: ':  Build start hour. Defaults to 0. Valid
+                            values: 0 ~ 23.'
+                          type: number
+                        startMinutes:
+                          description: ':  Build start minute. Defaults to 0. Valid
+                            values: 0 ~ 59.'
+                          type: number
+                        timeZone:
+                          description: |-
+                            12:00) International Date Line West,
+                            (UTC-11:00) Coordinated Universal Time-11,
+                            (UTC-10:00) Aleutian Islands,
+                            (UTC-10:00) Hawaii,
+                            (UTC-09:30) Marquesas Islands,
+                            (UTC-09:00) Alaska,
+                            (UTC-09:00) Coordinated Universal Time-09,
+                            (UTC-08:00) Baja California,
+                            (UTC-08:00) Coordinated Universal Time-08,
+                            (UTC-08:00) Pacific Time (US &Canada),
+                            (UTC-07:00) Arizona,
+                            (UTC-07:00) Chihuahua, La Paz, Mazatlan,
+                            (UTC-07:00) Mountain Time (US &Canada),
+                            (UTC-07:00) Yukon,
+                            (UTC-06:00) Central America,
+                            (UTC-06:00) Central Time (US &Canada),
+                            (UTC-06:00) Easter Island,
+                            (UTC-06:00) Guadalajara, Mexico City, Monterrey,
+                            (UTC-06:00) Saskatchewan,
+                            (UTC-05:00) Bogota, Lima, Quito, Rio Branco,
+                            (UTC-05:00) Chetumal,
+                            (UTC-05:00) Eastern Time (US &Canada),
+                            (UTC-05:00) Haiti,
+                            (UTC-05:00) Havana,
+                            (UTC-05:00) Indiana (East),
+                            (UTC-05:00) Turks and Caicos,
+                            (UTC-04:00) Asuncion,
+                            (UTC-04:00) Atlantic Time (Canada),
+                            (UTC-04:00) Caracas,
+                            (UTC-04:00) Cuiaba,
+                            (UTC-04:00) Georgetown, La Paz, Manaus, San Juan,
+                            (UTC-04:00) Santiago,
+                            (UTC-03:30) Newfoundland,
+                            (UTC-03:00) Araguaina,
+                            (UTC-03:00) Brasilia,
+                            (UTC-03:00) Cayenne, Fortaleza,
+                            (UTC-03:00) City of Buenos Aires,
+                            (UTC-03:00) Greenland,
+                            (UTC-03:00) Montevideo,
+                            (UTC-03:00) Punta Arenas,
+                            (UTC-03:00) Saint Pierre and Miquelon,
+                            (UTC-03:00) Salvador,
+                            (UTC-02:00) Coordinated Universal Time-02,
+                            (UTC-02:00) Mid-Atlantic - Old,
+                            (UTC-01:00) Azores,
+                            (UTC-01:00) Cabo Verde Is.,
+                            (UTC) Coordinated Universal Time,
+                            (UTC+00:00) Dublin, Edinburgh, Lisbon, London,
+                            (UTC+00:00) Monrovia, Reykjavik,
+                            (UTC+00:00) Sao Tome,
+                            (UTC+01:00) Casablanca,
+                            (UTC+01:00) Amsterdam, Berlin, Bern, Rome, Stockholm, Vienna,
+                            (UTC+01:00) Belgrade, Bratislava, Budapest, Ljubljana, Prague,
+                            (UTC+01:00) Brussels, Copenhagen, Madrid, Paris,
+                            (UTC+01:00) Sarajevo, Skopje, Warsaw, Zagreb,
+                            (UTC+01:00) West Central Africa,
+                            (UTC+02:00) Amman,
+                            (UTC+02:00) Athens, Bucharest,
+                            (UTC+02:00) Beirut,
+                            (UTC+02:00) Cairo,
+                            (UTC+02:00) Chisinau,
+                            (UTC+02:00) Damascus,
+                            (UTC+02:00) Gaza, Hebron,
+                            (UTC+02:00) Harare, Pretoria,
+                            (UTC+02:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius,
+                            (UTC+02:00) Jerusalem,
+                            (UTC+02:00) Juba,
+                            (UTC+02:00) Kaliningrad,
+                            (UTC+02:00) Khartoum,
+                            (UTC+02:00) Tripoli,
+                            (UTC+02:00) Windhoek,
+                            (UTC+03:00) Baghdad,
+                            (UTC+03:00) Istanbul,
+                            (UTC+03:00) Kuwait, Riyadh,
+                            (UTC+03:00) Minsk,
+                            (UTC+03:00) Moscow, St. Petersburg,
+                            (UTC+03:00) Nairobi,
+                            (UTC+03:00) Volgograd,
+                            (UTC+03:30) Tehran,
+                            (UTC+04:00) Abu Dhabi, Muscat,
+                            (UTC+04:00) Astrakhan, Ulyanovsk,
+                            (UTC+04:00) Baku,
+                            (UTC+04:00) Izhevsk, Samara,
+                            (UTC+04:00) Port Louis,
+                            (UTC+04:00) Saratov,
+                            (UTC+04:00) Tbilisi,
+                            (UTC+04:00) Yerevan,
+                            (UTC+04:30) Kabul,
+                            (UTC+05:00) Ashgabat, Tashkent,
+                            (UTC+05:00) Ekaterinburg,
+                            (UTC+05:00) Islamabad, Karachi,
+                            (UTC+05:00) Qyzylorda,
+                            (UTC+05:30) Chennai, Kolkata, Mumbai, New Delhi,
+                            (UTC+05:30) Sri Jayawardenepura,
+                            (UTC+05:45) Kathmandu,
+                            (UTC+06:00) Astana,
+                            (UTC+06:00) Dhaka,
+                            (UTC+06:00) Omsk,
+                            (UTC+06:30) Yangon (Rangoon),
+                            (UTC+07:00) Bangkok, Hanoi, Jakarta,
+                            (UTC+07:00) Barnaul, Gorno-Altaysk,
+                            (UTC+07:00) Hovd,
+                            (UTC+07:00) Krasnoyarsk,
+                            (UTC+07:00) Novosibirsk,
+                            (UTC+07:00) Tomsk,
+                            (UTC+08:00) Beijing, Chongqing, Hong Kong, Urumqi,
+                            (UTC+08:00) Irkutsk,
+                            (UTC+08:00) Kuala Lumpur, Singapore,
+                            (UTC+08:00) Perth,
+                            (UTC+08:00) Taipei,
+                            (UTC+08:00) Ulaanbaatar,
+                            (UTC+08:45) Eucla,
+                            (UTC+09:00) Chita,
+                            (UTC+09:00) Osaka, Sapporo, Tokyo,
+                            (UTC+09:00) Pyongyang,
+                            (UTC+09:00) Seoul,
+                            (UTC+09:00) Yakutsk,
+                            (UTC+09:30) Adelaide,
+                            (UTC+09:30) Darwin,
+                            (UTC+10:00) Brisbane,
+                            (UTC+10:00) Canberra, Melbourne, Sydney,
+                            (UTC+10:00) Guam, Port Moresby,
+                            (UTC+10:00) Hobart,
+                            (UTC+10:00) Vladivostok,
+                            (UTC+10:30) Lord Howe Island,
+                            (UTC+11:00) Bougainville Island,
+                            (UTC+11:00) Chokurdakh,
+                            (UTC+11:00) Magadan,
+                            (UTC+11:00) Norfolk Island,
+                            (UTC+11:00) Sakhalin,
+                            (UTC+11:00) Solomon Is., New Caledonia,
+                            (UTC+12:00) Anadyr, Petropavlovsk-Kamchatsky,
+                            (UTC+12:00) Auckland, Wellington,
+                            (UTC+12:00) Coordinated Universal Time+12,
+                            (UTC+12:00) Fiji,
+                            (UTC+12:00) Petropavlovsk-Kamchatsky - Old,
+                            (UTC+12:45) Chatham Islands,
+                            (UTC+13:00) Coordinated Universal Time+13,
+                            (UTC+13:00) Nuku'alofa,
+                            (UTC+13:00) Samoa,
+                            (UTC+14:00) Kiritimati Island.
+                          type: string
+                      type: object
+                    type: array
+                  variable:
+                    description: A list of variable blocks, as documented below.
+                    items:
+                      properties:
+                        allowOverride:
+                          description: True if the variable can be overridden. Defaults
+                            to true.
+                          type: boolean
+                        isSecret:
+                          description: True if the variable is a secret. Defaults
+                            to false.
+                          type: boolean
+                        name:
+                          description: The name of the variable.
+                          type: string
+                        value:
+                          description: The value of the variable.
+                          type: string
+                      type: object
+                    type: array
+                  variableGroups:
+                    description: A list of variable group IDs (integers) to link to
+                      the build definition.
+                    items:
+                      type: number
+                    type: array
+                    x-kubernetes-list-type: set
+                type: object
+              conditions:
+                description: Conditions of the resource.
+                items:
+                  description: A Condition that may apply to a resource.
+                  properties:
+                    lastTransitionTime:
+                      description: |-
+                        LastTransitionTime is the last time this condition transitioned from one
+                        status to another.
+                      format: date-time
+                      type: string
+                    message:
+                      description: |-
+                        A Message containing details about this condition's last transition from
+                        one status to another, if any.
+                      type: string
+                    observedGeneration:
+                      description: |-
+                        ObservedGeneration represents the .metadata.generation that the condition was set based upon.
+                        For instance, if .metadata.generation is currently 12, but the .status.conditions[x].observedGeneration is 9, the condition is out of date
+                        with respect to the current state of the instance.
+                      format: int64
+                      type: integer
+                    reason:
+                      description: A Reason for this condition's last transition from
+                        one status to another.
+                      type: string
+                    status:
+                      description: Status of this condition; is it currently True,
+                        False, or Unknown?
+                      type: string
+                    type:
+                      description: |-
+                        Type of this condition. At most one of each condition type may apply to
+                        a resource at any point in time.
+                      type: string
+                  required:
+                  - lastTransitionTime
+                  - reason
+                  - status
+                  - type
+                  type: object
+                type: array
+                x-kubernetes-list-map-keys:
+                - type
+                x-kubernetes-list-type: map
+              observedGeneration:
+                description: |-
+                  ObservedGeneration is the latest metadata.generation
+                  which resulted in either a ready state, or stalled due to error
+                  it can not recover from without human intervention.
+                format: int64
+                type: integer
+            type: object
+        required:
+        - spec
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}

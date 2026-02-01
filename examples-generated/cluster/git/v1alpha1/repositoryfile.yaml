@@ -1,0 +1,50 @@
+apiVersion: git.azuredevops.crossplane.io/v1alpha1
+kind: RepositoryFile
+metadata:
+  annotations:
+    meta.upbound.io/example-id: git/v1alpha1/repositoryfile
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    branch: refs/heads/master
+    commitMessage: First commit
+    content: '**/*.tfstate'
+    file: .gitignore
+    overwriteOnCreate: false
+    repositoryId: ${azuredevops_git_repository.example.id}
+
+---
+
+apiVersion: git.azuredevops.crossplane.io/v1alpha1
+kind: Repository
+metadata:
+  annotations:
+    meta.upbound.io/example-id: git/v1alpha1/repositoryfile
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    initialization:
+    - initType: Clean
+    name: Example Git Repository
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: git/v1alpha1/repositoryfile
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

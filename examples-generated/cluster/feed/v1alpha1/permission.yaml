@@ -1,0 +1,57 @@
+apiVersion: feed.azuredevops.crossplane.io/v1alpha1
+kind: Permission
+metadata:
+  annotations:
+    meta.upbound.io/example-id: feed/v1alpha1/permission
+  labels:
+    testing.upbound.io/example-name: permission
+  name: permission
+spec:
+  forProvider:
+    feedId: ${azuredevops_feed.example.id}
+    identityDescriptor: ${azuredevops_group.example.descriptor}
+    role: reader
+
+---
+
+apiVersion: feed.azuredevops.crossplane.io/v1alpha1
+kind: Feed
+metadata:
+  annotations:
+    meta.upbound.io/example-id: feed/v1alpha1/permission
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    name: releases
+
+---
+
+apiVersion: group.azuredevops.crossplane.io/v1alpha1
+kind: Group
+metadata:
+  annotations:
+    meta.upbound.io/example-id: feed/v1alpha1/permission
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Example description
+    displayName: Example group
+    scope: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: feed/v1alpha1/permission
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    name: Example Project

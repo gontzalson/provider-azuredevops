@@ -1,0 +1,99 @@
+apiVersion: build.azuredevops.crossplane.io/v1alpha1
+kind: Definition
+metadata:
+  annotations:
+    meta.upbound.io/example-id: build/v1alpha1/definition
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    ciTrigger:
+    - useYaml: false
+    name: Example Build Definition
+    path: \ExampleFolder
+    projectId: ${azuredevops_project.example.id}
+    repository:
+    - branchName: ${azuredevops_git_repository.example.default_branch}
+      repoId: ${azuredevops_git_repository.example.id}
+      repoType: TfsGit
+      ymlPath: azure-pipelines.yml
+    schedules:
+    - branchFilter:
+      - exclude:
+        - test
+        - regression
+        include:
+        - master
+      daysToBuild:
+      - Wed
+      - Sun
+      scheduleOnlyWithChanges: true
+      startHours: 10
+      startMinutes: 59
+      timeZone: (UTC) Coordinated Universal Time
+    variable:
+    - name: PipelineVariable
+      value: Go Microsoft!
+    - isSecret: true
+      name: PipelineSecret
+      secretValueSecretRef:
+        key: example-key
+        name: example-secret
+        namespace: upbound-system
+    variableGroups:
+    - ${azuredevops_variable_group.example.id}
+
+---
+
+apiVersion: git.azuredevops.crossplane.io/v1alpha1
+kind: Repository
+metadata:
+  annotations:
+    meta.upbound.io/example-id: build/v1alpha1/definition
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    initialization:
+    - initType: Clean
+    name: Example Repository
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: build/v1alpha1/definition
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
+
+---
+
+apiVersion: variablegroup.azuredevops.crossplane.io/v1alpha1
+kind: Group
+metadata:
+  annotations:
+    meta.upbound.io/example-id: build/v1alpha1/definition
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    allowAccess: true
+    description: Managed by Terraform
+    name: Example Pipeline Variables
+    projectId: ${azuredevops_project.example.id}
+    variable:
+    - name: FOO
+      value: BAR

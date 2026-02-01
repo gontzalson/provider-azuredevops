@@ -1,0 +1,36 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Aws
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/aws
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    accessKeyId: 00000000-0000-0000-0000-000000000000
+    description: Managed by AzureDevOps
+    projectId: ${azuredevops_project.example.id}
+    secretAccessKeySecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
+    serviceEndpointName: Example AWS
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/aws
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

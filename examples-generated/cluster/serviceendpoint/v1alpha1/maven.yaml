@@ -1,0 +1,38 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Maven
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/maven
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    authenticationToken:
+    - tokenSecretRef:
+        key: example-key
+        name: example-secret
+        namespace: upbound-system
+    description: Service Endpoint for 'Maven' (Managed by Terraform)
+    projectId: ${azuredevops_project.example.id}
+    repositoryId: example
+    serviceEndpointName: maven-example
+    url: https://example.com
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/maven
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

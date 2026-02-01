@@ -10,17 +10,49 @@ package namespaced
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	v1alpha1 "github.com/gontzalson/provider-azuredevops/apis/namespaced/project/v1alpha1"
+	v1alpha1 "github.com/gontzalson/provider-azuredevops/apis/namespaced/agent/v1alpha1"
+	v1alpha1branchpolicy "github.com/gontzalson/provider-azuredevops/apis/namespaced/branchpolicy/v1alpha1"
+	v1alpha1build "github.com/gontzalson/provider-azuredevops/apis/namespaced/build/v1alpha1"
+	v1alpha1check "github.com/gontzalson/provider-azuredevops/apis/namespaced/check/v1alpha1"
+	v1alpha1environment "github.com/gontzalson/provider-azuredevops/apis/namespaced/environment/v1alpha1"
+	v1alpha1feed "github.com/gontzalson/provider-azuredevops/apis/namespaced/feed/v1alpha1"
+	v1alpha1git "github.com/gontzalson/provider-azuredevops/apis/namespaced/git/v1alpha1"
+	v1alpha1group "github.com/gontzalson/provider-azuredevops/apis/namespaced/group/v1alpha1"
+	v1alpha1other "github.com/gontzalson/provider-azuredevops/apis/namespaced/other/v1alpha1"
+	v1alpha1permissions "github.com/gontzalson/provider-azuredevops/apis/namespaced/permissions/v1alpha1"
+	v1alpha1project "github.com/gontzalson/provider-azuredevops/apis/namespaced/project/v1alpha1"
+	v1alpha1repositorypolicy "github.com/gontzalson/provider-azuredevops/apis/namespaced/repositorypolicy/v1alpha1"
+	v1alpha1serviceendpoint "github.com/gontzalson/provider-azuredevops/apis/namespaced/serviceendpoint/v1alpha1"
+	v1alpha1team "github.com/gontzalson/provider-azuredevops/apis/namespaced/team/v1alpha1"
 	v1alpha1namespaced "github.com/gontzalson/provider-azuredevops/apis/namespaced/v1alpha1"
 	v1beta1 "github.com/gontzalson/provider-azuredevops/apis/namespaced/v1beta1"
+	v1alpha1variablegroup "github.com/gontzalson/provider-azuredevops/apis/namespaced/variablegroup/v1alpha1"
+	v1alpha1wiki "github.com/gontzalson/provider-azuredevops/apis/namespaced/wiki/v1alpha1"
+	v1alpha1workitem "github.com/gontzalson/provider-azuredevops/apis/namespaced/workitem/v1alpha1"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		v1alpha1.SchemeBuilder.AddToScheme,
+		v1alpha1branchpolicy.SchemeBuilder.AddToScheme,
+		v1alpha1build.SchemeBuilder.AddToScheme,
+		v1alpha1check.SchemeBuilder.AddToScheme,
+		v1alpha1environment.SchemeBuilder.AddToScheme,
+		v1alpha1feed.SchemeBuilder.AddToScheme,
+		v1alpha1git.SchemeBuilder.AddToScheme,
+		v1alpha1group.SchemeBuilder.AddToScheme,
+		v1alpha1other.SchemeBuilder.AddToScheme,
+		v1alpha1permissions.SchemeBuilder.AddToScheme,
+		v1alpha1project.SchemeBuilder.AddToScheme,
+		v1alpha1repositorypolicy.SchemeBuilder.AddToScheme,
+		v1alpha1serviceendpoint.SchemeBuilder.AddToScheme,
+		v1alpha1team.SchemeBuilder.AddToScheme,
 		v1alpha1namespaced.SchemeBuilder.AddToScheme,
 		v1beta1.SchemeBuilder.AddToScheme,
+		v1alpha1variablegroup.SchemeBuilder.AddToScheme,
+		v1alpha1wiki.SchemeBuilder.AddToScheme,
+		v1alpha1workitem.SchemeBuilder.AddToScheme,
 	)
 }
 

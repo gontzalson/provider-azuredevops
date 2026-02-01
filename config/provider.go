@@ -6,7 +6,23 @@ import (
 
 	ujconfig "github.com/crossplane/upjet/v2/pkg/config"
 
+	"github.com/gontzalson/provider-azuredevops/config/agent"
+	"github.com/gontzalson/provider-azuredevops/config/branchpolicy"
+	"github.com/gontzalson/provider-azuredevops/config/build"
+	"github.com/gontzalson/provider-azuredevops/config/check"
+	"github.com/gontzalson/provider-azuredevops/config/environment"
+	"github.com/gontzalson/provider-azuredevops/config/feed"
+	"github.com/gontzalson/provider-azuredevops/config/git"
+	"github.com/gontzalson/provider-azuredevops/config/group"
+	"github.com/gontzalson/provider-azuredevops/config/other"
+	"github.com/gontzalson/provider-azuredevops/config/permissions"
 	"github.com/gontzalson/provider-azuredevops/config/project"
+	"github.com/gontzalson/provider-azuredevops/config/repositorypolicy"
+	"github.com/gontzalson/provider-azuredevops/config/serviceendpoint"
+	"github.com/gontzalson/provider-azuredevops/config/team"
+	"github.com/gontzalson/provider-azuredevops/config/variablegroup"
+	"github.com/gontzalson/provider-azuredevops/config/wiki"
+	"github.com/gontzalson/provider-azuredevops/config/workitem"
 )
 
 const (
@@ -32,7 +48,23 @@ func GetProvider() *ujconfig.Provider {
 
 	for _, configure := range []func(provider *ujconfig.Provider){
 		// add custom config functions
+		agent.Configure,
+		branchpolicy.Configure,
+		build.Configure,
+		check.Configure,
+		environment.Configure,
+		feed.Configure,
+		git.Configure,
+		group.Configure,
+		other.Configure,
+		permissions.Configure,
 		project.Configure,
+		repositorypolicy.Configure,
+		serviceendpoint.Configure,
+		team.Configure,
+		variablegroup.Configure,
+		wiki.Configure,
+		workitem.Configure,
 	} {
 		configure(pc)
 	}
@@ -57,7 +89,23 @@ func GetProviderNamespaced() *ujconfig.Provider {
 
 	for _, configure := range []func(provider *ujconfig.Provider){
 		// add custom config functions
+		agent.Configure,
+		branchpolicy.Configure,
+		build.Configure,
+		check.Configure,
+		environment.Configure,
+		feed.Configure,
+		git.Configure,
+		group.Configure,
+		other.Configure,
+		permissions.Configure,
 		project.Configure,
+		repositorypolicy.Configure,
+		serviceendpoint.Configure,
+		team.Configure,
+		variablegroup.Configure,
+		wiki.Configure,
+		workitem.Configure,
 	} {
 		configure(pc)
 	}

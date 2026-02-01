@@ -1,0 +1,42 @@
+apiVersion: serviceendpoint.azuredevops.m.crossplane.io/v1alpha1
+kind: Azurerm
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/azurerm
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    azurermSpnTenantid: 00000000-0000-0000-0000-000000000000
+    azurermSubscriptionId: 00000000-0000-0000-0000-000000000000
+    azurermSubscriptionName: Example Subscription Name
+    credentials:
+    - serviceprincipalid: 00000000-0000-0000-0000-000000000000
+      serviceprincipalkeySecretRef:
+        key: example-key
+        name: example-secret
+    description: Managed by Terraform
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointAuthenticationScheme: ServicePrincipal
+    serviceEndpointName: Example AzureRM
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/azurerm
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

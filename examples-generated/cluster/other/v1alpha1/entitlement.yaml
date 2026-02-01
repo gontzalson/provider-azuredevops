@@ -1,0 +1,11 @@
+apiVersion: other.azuredevops.crossplane.io/v1alpha1
+kind: Entitlement
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/entitlement
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    principalName: foo@contoso.com

@@ -1,0 +1,36 @@
+apiVersion: workitem.azuredevops.m.crossplane.io/v1alpha1
+kind: Workitem
+metadata:
+  annotations:
+    meta.upbound.io/example-id: workitem/v1alpha1/workitem
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    projectId: ${data.azuredevops_project.example.id}
+    state: Active
+    tags:
+    - Tag
+    title: Example Work Item
+    type: Issue
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: workitem/v1alpha1/workitem
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

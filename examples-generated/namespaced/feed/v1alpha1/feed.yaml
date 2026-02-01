@@ -1,0 +1,12 @@
+apiVersion: feed.azuredevops.m.crossplane.io/v1alpha1
+kind: Feed
+metadata:
+  annotations:
+    meta.upbound.io/example-id: feed/v1alpha1/feed
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    name: releases

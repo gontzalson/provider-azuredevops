@@ -1,0 +1,48 @@
+apiVersion: team.azuredevops.crossplane.io/v1alpha1
+kind: Administrators
+metadata:
+  annotations:
+    meta.upbound.io/example-id: team/v1alpha1/administrators
+  labels:
+    testing.upbound.io/example-name: example-team-administrators
+  name: example-team-administrators
+spec:
+  forProvider:
+    administrators:
+    - ${data.azuredevops_group.example-project-contributors.descriptor}
+    mode: overwrite
+    projectId: ${azuredevops_team.example.project_id}
+    teamId: ${azuredevops_team.example.id}
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: team/v1alpha1/administrators
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
+
+---
+
+apiVersion: team.azuredevops.crossplane.io/v1alpha1
+kind: Team
+metadata:
+  annotations:
+    meta.upbound.io/example-id: team/v1alpha1/administrators
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    name: Example Project
+    projectId: ${azuredevops_project.example.id}

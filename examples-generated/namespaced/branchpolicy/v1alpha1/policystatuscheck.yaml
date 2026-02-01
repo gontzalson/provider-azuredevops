@@ -1,0 +1,81 @@
+apiVersion: branchpolicy.azuredevops.m.crossplane.io/v1alpha1
+kind: PolicyStatusCheck
+metadata:
+  annotations:
+    meta.upbound.io/example-id: branchpolicy/v1alpha1/policystatuscheck
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    blocking: true
+    enabled: true
+    projectId: ${azuredevops_project.example.id}
+    settings:
+    - applicability: conditional
+      authorId: ${azuredevops_user_entitlement.example.id}
+      displayName: PreCheck
+      invalidateOnUpdate: true
+      name: Release
+      scope:
+      - matchType: Exact
+        repositoryId: ${azuredevops_git_repository.example.id}
+        repositoryRef: ${azuredevops_git_repository.example.default_branch}
+      - matchType: DefaultBranch
+
+---
+
+apiVersion: git.azuredevops.m.crossplane.io/v1alpha1
+kind: Repository
+metadata:
+  annotations:
+    meta.upbound.io/example-id: branchpolicy/v1alpha1/policystatuscheck
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    initialization:
+    - initType: Clean
+    name: Example Repository
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: branchpolicy/v1alpha1/policystatuscheck
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    features:
+      artifacts: disabled
+      testplans: disabled
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
+
+---
+
+apiVersion: other.azuredevops.m.crossplane.io/v1alpha1
+kind: Entitlement
+metadata:
+  annotations:
+    meta.upbound.io/example-id: branchpolicy/v1alpha1/policystatuscheck
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    accountLicenseType: basic
+    principalName: mail@email.com

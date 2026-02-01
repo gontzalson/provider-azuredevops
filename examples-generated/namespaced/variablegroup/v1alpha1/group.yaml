@@ -1,0 +1,42 @@
+apiVersion: variablegroup.azuredevops.m.crossplane.io/v1alpha1
+kind: Group
+metadata:
+  annotations:
+    meta.upbound.io/example-id: variablegroup/v1alpha1/group
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    allowAccess: true
+    description: Example Variable Group Description
+    name: Example Variable Group
+    projectId: ${azuredevops_project.example.id}
+    variable:
+    - name: key1
+      value: val1
+    - isSecret: true
+      name: key2
+      secretValueSecretRef:
+        key: example-key
+        name: example-secret
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: variablegroup/v1alpha1/group
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

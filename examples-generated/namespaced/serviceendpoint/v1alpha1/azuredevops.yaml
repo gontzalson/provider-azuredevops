@@ -1,0 +1,38 @@
+apiVersion: serviceendpoint.azuredevops.m.crossplane.io/v1alpha1
+kind: Azuredevops
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/azuredevops
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    orgUrl: https://dev.azure.com/testorganization
+    personalAccessTokenSecretRef:
+      key: example-key
+      name: example-secret
+    projectId: ${azuredevops_project.example.id}
+    releaseApiUrl: https://vsrm.dev.azure.com/testorganization
+    serviceEndpointName: Example Azure DevOps
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/azuredevops
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

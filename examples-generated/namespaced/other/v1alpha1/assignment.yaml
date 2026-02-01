@@ -1,0 +1,68 @@
+apiVersion: other.azuredevops.m.crossplane.io/v1alpha1
+kind: Assignment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/assignment
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    identityId: ${azuredevops_group.example.origin_id}
+    resourceId: ${format("%s_%s", azuredevops_project.example.id, azuredevops_environment.example.id)}
+    roleName: Administrator
+    scope: distributedtask.environmentreferencerole
+
+---
+
+apiVersion: environment.azuredevops.m.crossplane.io/v1alpha1
+kind: Environment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/assignment
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Example pipeline deployment environment
+    name: Example Environment
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: group.azuredevops.m.crossplane.io/v1alpha1
+kind: Group
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/assignment
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Description of example group
+    displayName: Example group
+    scope: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/assignment
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

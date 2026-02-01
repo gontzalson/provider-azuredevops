@@ -1,0 +1,35 @@
+apiVersion: other.azuredevops.crossplane.io/v1alpha1
+kind: StorageQueuePipelines
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/storagequeuepipelines
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    accountKeySecretRef:
+      key: attribute.primary_access_key
+      name: example-storage-account
+      namespace: upbound-system
+    accountName: ${azurerm_storage_account.example.name}
+    projectId: ${azuredevops_project.example.id}
+    queueName: ${azurerm_storage_queue.example.name}
+    runStateChangedEvent:
+    - runResultFilter: Succeeded
+      runStateFilter: Completed
+    visiTimeout: 30
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/storagequeuepipelines
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    name: example-project

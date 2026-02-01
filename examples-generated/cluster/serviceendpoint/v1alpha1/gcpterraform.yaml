@@ -1,0 +1,38 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: GCPTerraform
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/gcpterraform
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    clientEmail: gcp-sa-example@example.iam.gserviceaccount.com
+    description: Managed by Terraform
+    gcpProjectId: Example GCP Project
+    privateKeySecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointName: Example GCP Terraform extension
+    tokenUri: https://oauth2.example.com/token
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/gcpterraform
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

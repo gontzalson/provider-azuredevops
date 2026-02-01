@@ -1,0 +1,44 @@
+apiVersion: group.azuredevops.m.crossplane.io/v1alpha1
+kind: Membership
+metadata:
+  annotations:
+    meta.upbound.io/example-id: group/v1alpha1/membership
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    group: ${data.azuredevops_group.example.descriptor}
+    members:
+    - ${azuredevops_user_entitlement.example.descriptor}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: group/v1alpha1/membership
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    name: Example Project
+
+---
+
+apiVersion: other.azuredevops.m.crossplane.io/v1alpha1
+kind: Entitlement
+metadata:
+  annotations:
+    meta.upbound.io/example-id: group/v1alpha1/membership
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    principalName: foo@contoso.com

@@ -1,0 +1,43 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Servicefabric
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/servicefabric
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    certificate:
+    - clientCertificatePasswordSecretRef:
+        key: example-key
+        name: example-secret
+        namespace: upbound-system
+      clientCertificateSecretRef:
+        key: example-key
+        name: example-secret
+        namespace: upbound-system
+      serverCertificateLookup: Thumbprint
+      serverCertificateThumbprint: "0000000000000000000000000000000000000000"
+    clusterEndpoint: tcp://test
+    description: Managed by Terraform
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointName: Example Service Fabric
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/servicefabric
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

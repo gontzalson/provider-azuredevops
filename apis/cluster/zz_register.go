@@ -10,17 +10,49 @@ package cluster
 import (
 	"k8s.io/apimachinery/pkg/runtime"
 
-	v1alpha1 "github.com/gontzalson/provider-azuredevops/apis/cluster/project/v1alpha1"
+	v1alpha1 "github.com/gontzalson/provider-azuredevops/apis/cluster/agent/v1alpha1"
+	v1alpha1branchpolicy "github.com/gontzalson/provider-azuredevops/apis/cluster/branchpolicy/v1alpha1"
+	v1alpha1build "github.com/gontzalson/provider-azuredevops/apis/cluster/build/v1alpha1"
+	v1alpha1check "github.com/gontzalson/provider-azuredevops/apis/cluster/check/v1alpha1"
+	v1alpha1environment "github.com/gontzalson/provider-azuredevops/apis/cluster/environment/v1alpha1"
+	v1alpha1feed "github.com/gontzalson/provider-azuredevops/apis/cluster/feed/v1alpha1"
+	v1alpha1git "github.com/gontzalson/provider-azuredevops/apis/cluster/git/v1alpha1"
+	v1alpha1group "github.com/gontzalson/provider-azuredevops/apis/cluster/group/v1alpha1"
+	v1alpha1other "github.com/gontzalson/provider-azuredevops/apis/cluster/other/v1alpha1"
+	v1alpha1permissions "github.com/gontzalson/provider-azuredevops/apis/cluster/permissions/v1alpha1"
+	v1alpha1project "github.com/gontzalson/provider-azuredevops/apis/cluster/project/v1alpha1"
+	v1alpha1repositorypolicy "github.com/gontzalson/provider-azuredevops/apis/cluster/repositorypolicy/v1alpha1"
+	v1alpha1serviceendpoint "github.com/gontzalson/provider-azuredevops/apis/cluster/serviceendpoint/v1alpha1"
+	v1alpha1team "github.com/gontzalson/provider-azuredevops/apis/cluster/team/v1alpha1"
 	v1alpha1cluster "github.com/gontzalson/provider-azuredevops/apis/cluster/v1alpha1"
 	v1beta1 "github.com/gontzalson/provider-azuredevops/apis/cluster/v1beta1"
+	v1alpha1variablegroup "github.com/gontzalson/provider-azuredevops/apis/cluster/variablegroup/v1alpha1"
+	v1alpha1wiki "github.com/gontzalson/provider-azuredevops/apis/cluster/wiki/v1alpha1"
+	v1alpha1workitem "github.com/gontzalson/provider-azuredevops/apis/cluster/workitem/v1alpha1"
 )
 
 func init() {
 	// Register the types with the Scheme so the components can map objects to GroupVersionKinds and back
 	AddToSchemes = append(AddToSchemes,
 		v1alpha1.SchemeBuilder.AddToScheme,
+		v1alpha1branchpolicy.SchemeBuilder.AddToScheme,
+		v1alpha1build.SchemeBuilder.AddToScheme,
+		v1alpha1check.SchemeBuilder.AddToScheme,
+		v1alpha1environment.SchemeBuilder.AddToScheme,
+		v1alpha1feed.SchemeBuilder.AddToScheme,
+		v1alpha1git.SchemeBuilder.AddToScheme,
+		v1alpha1group.SchemeBuilder.AddToScheme,
+		v1alpha1other.SchemeBuilder.AddToScheme,
+		v1alpha1permissions.SchemeBuilder.AddToScheme,
+		v1alpha1project.SchemeBuilder.AddToScheme,
+		v1alpha1repositorypolicy.SchemeBuilder.AddToScheme,
+		v1alpha1serviceendpoint.SchemeBuilder.AddToScheme,
+		v1alpha1team.SchemeBuilder.AddToScheme,
 		v1alpha1cluster.SchemeBuilder.AddToScheme,
 		v1beta1.SchemeBuilder.AddToScheme,
+		v1alpha1variablegroup.SchemeBuilder.AddToScheme,
+		v1alpha1wiki.SchemeBuilder.AddToScheme,
+		v1alpha1workitem.SchemeBuilder.AddToScheme,
 	)
 }
 

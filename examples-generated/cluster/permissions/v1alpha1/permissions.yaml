@@ -1,0 +1,36 @@
+apiVersion: permissions.azuredevops.crossplane.io/v1alpha1
+kind: Permissions
+metadata:
+  annotations:
+    meta.upbound.io/example-id: permissions/v1alpha1/permissions
+  labels:
+    testing.upbound.io/example-name: example-root-permissions
+  name: example-root-permissions
+spec:
+  forProvider:
+    path: /
+    permissions:
+      CREATE_CHILDREN: Deny
+      DELETE: Deny
+      GENERIC_READ: Allow
+      WORK_ITEM_READ: Allow
+    principal: ${data.azuredevops_group.example-project-readers.id}
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: permissions/v1alpha1/permissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

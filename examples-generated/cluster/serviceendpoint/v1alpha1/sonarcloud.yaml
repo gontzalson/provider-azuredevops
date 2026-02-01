@@ -1,0 +1,35 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Sonarcloud
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/sonarcloud
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointName: Example SonarCloud
+    tokenSecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/sonarcloud
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

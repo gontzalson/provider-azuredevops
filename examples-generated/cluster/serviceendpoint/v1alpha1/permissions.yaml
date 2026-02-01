@@ -1,0 +1,58 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Permissions
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/permissions
+  labels:
+    testing.upbound.io/example-name: example-root-permissions
+  name: example-root-permissions
+spec:
+  forProvider:
+    permissions:
+      Administer: allow
+      Create: allow
+      Use: allow
+      ViewAuthorization: allow
+      ViewEndpoint: allow
+    principal: ${data.azuredevops_group.example-readers.id}
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/permissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
+
+---
+
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Dockerregistry
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/permissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    dockerEmail: email@example.com
+    dockerPasswordSecretRef:
+      key: example-key
+      name: example-secret
+      namespace: upbound-system
+    dockerUsername: username
+    projectId: ${azuredevops_project.example.id}
+    registryType: DockerHub
+    serviceEndpointName: Example Docker Hub

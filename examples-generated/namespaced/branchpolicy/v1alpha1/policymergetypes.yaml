@@ -1,0 +1,60 @@
+apiVersion: branchpolicy.azuredevops.m.crossplane.io/v1alpha1
+kind: PolicyMergeTypes
+metadata:
+  annotations:
+    meta.upbound.io/example-id: branchpolicy/v1alpha1/policymergetypes
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    blocking: true
+    enabled: true
+    projectId: ${azuredevops_project.example.id}
+    settings:
+    - allowBasicNoFastForward: true
+      allowRebaseAndFastForward: true
+      allowRebaseWithMerge: true
+      allowSquash: true
+      scope:
+      - matchType: Exact
+        repositoryId: ${azuredevops_git_repository.example.id}
+        repositoryRef: ${azuredevops_git_repository.example.default_branch}
+      - matchType: Prefix
+        repositoryId: null
+        repositoryRef: refs/heads/releases
+      - matchType: DefaultBranch
+
+---
+
+apiVersion: git.azuredevops.m.crossplane.io/v1alpha1
+kind: Repository
+metadata:
+  annotations:
+    meta.upbound.io/example-id: branchpolicy/v1alpha1/policymergetypes
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    initialization:
+    - initType: Clean
+    name: Example Repository
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: branchpolicy/v1alpha1/policymergetypes
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    name: Example Project

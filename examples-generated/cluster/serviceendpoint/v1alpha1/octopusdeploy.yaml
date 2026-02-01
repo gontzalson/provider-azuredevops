@@ -1,0 +1,33 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Octopusdeploy
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/octopusdeploy
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    apiKey: "000000000000000000000000000000000000"
+    description: Managed by Terraform
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointName: Example Octopus Deploy
+    url: https://octopus.com
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/octopusdeploy
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

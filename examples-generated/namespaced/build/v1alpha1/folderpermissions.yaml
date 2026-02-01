@@ -1,0 +1,65 @@
+apiVersion: build.azuredevops.m.crossplane.io/v1alpha1
+kind: FolderPermissions
+metadata:
+  annotations:
+    meta.upbound.io/example-id: build/v1alpha1/folderpermissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    path: \ExampleFolder
+    permissions:
+      AdministerBuildPermissions: NotSet
+      DeleteBuildDefinition: Deny
+      DeleteBuilds: Deny
+      DestroyBuilds: Deny
+      EditBuildDefinition: Deny
+      EditBuildQuality: Allow
+      ManageBuildQualities: Deny
+      ManageBuildQueue: Deny
+      QueueBuilds: Allow
+      RetainIndefinitely: Allow
+      StopBuilds: Allow
+      UpdateBuildInformation: Deny
+      ViewBuildDefinition: Allow
+      ViewBuilds: Allow
+    principal: ${data.azuredevops_group.example-readers.id}
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: build.azuredevops.m.crossplane.io/v1alpha1
+kind: Folder
+metadata:
+  annotations:
+    meta.upbound.io/example-id: build/v1alpha1/folderpermissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: ExampleFolder description
+    path: \ExampleFolder
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: build/v1alpha1/folderpermissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

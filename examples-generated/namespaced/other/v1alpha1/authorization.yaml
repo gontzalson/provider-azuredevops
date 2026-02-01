@@ -1,0 +1,54 @@
+apiVersion: other.azuredevops.m.crossplane.io/v1alpha1
+kind: Authorization
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/authorization
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    authorized: true
+    projectId: ${azuredevops_project.example.id}
+    resourceId: ${azuredevops_serviceendpoint_bitbucket.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/authorization
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
+
+---
+
+apiVersion: serviceendpoint.azuredevops.m.crossplane.io/v1alpha1
+kind: Bitbucket
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/authorization
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    passwordSecretRef:
+      key: example-key
+      name: example-secret
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointName: example-bitbucket
+    username: username

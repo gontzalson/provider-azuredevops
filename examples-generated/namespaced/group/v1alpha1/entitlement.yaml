@@ -1,0 +1,12 @@
+apiVersion: group.azuredevops.m.crossplane.io/v1alpha1
+kind: Entitlement
+metadata:
+  annotations:
+    meta.upbound.io/example-id: group/v1alpha1/entitlement
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    displayName: Group Name

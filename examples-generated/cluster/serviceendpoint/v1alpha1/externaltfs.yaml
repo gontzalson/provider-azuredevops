@@ -1,0 +1,37 @@
+apiVersion: serviceendpoint.azuredevops.crossplane.io/v1alpha1
+kind: Externaltfs
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/externaltfs
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    authPersonal:
+    - personalAccessTokenSecretRef:
+        key: example-key
+        name: example-secret
+        namespace: upbound-system
+    description: Managed by Terraform
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointName: Example External TFS Name
+    url: https://dev.azure.com/myorganization
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/externaltfs
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

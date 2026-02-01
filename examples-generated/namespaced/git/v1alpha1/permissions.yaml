@@ -1,0 +1,36 @@
+apiVersion: git.azuredevops.m.crossplane.io/v1alpha1
+kind: Permissions
+metadata:
+  annotations:
+    meta.upbound.io/example-id: git/v1alpha1/permissions
+  labels:
+    testing.upbound.io/example-name: example-permissions
+  name: example-permissions
+  namespace: crossplane-system
+spec:
+  forProvider:
+    permissions:
+      CreateRepository: Deny
+      DeleteRepository: Deny
+      RenameRepository: NotSet
+    principal: ${data.azuredevops_group.example-readers.id}
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: git/v1alpha1/permissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

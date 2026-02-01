@@ -1,0 +1,62 @@
+apiVersion: other.azuredevops.crossplane.io/v1alpha1
+kind: Authorization
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/authorization
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    projectId: ${azuredevops_project.example.id}
+    resourceId: ${azuredevops_agent_queue.example.id}
+    type: queue
+
+---
+
+apiVersion: agent.azuredevops.crossplane.io/v1alpha1
+kind: Pool
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/authorization
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    autoProvision: false
+    autoUpdate: false
+    name: Example Pool
+
+---
+
+apiVersion: agent.azuredevops.crossplane.io/v1alpha1
+kind: Queue
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/authorization
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    agentPoolId: ${azuredevops_agent_pool.example.id}
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: other/v1alpha1/authorization
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

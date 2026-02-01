@@ -1,0 +1,80 @@
+apiVersion: environment.azuredevops.m.crossplane.io/v1alpha1
+kind: ResourceKubernetes
+metadata:
+  annotations:
+    meta.upbound.io/example-id: environment/v1alpha1/resourcekubernetes
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    clusterName: example-aks
+    environmentId: ${azuredevops_environment.example.id}
+    name: Example
+    namespace: default
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointId: ${azuredevops_serviceendpoint_kubernetes.example.id}
+    tags:
+    - tag1
+    - tag2
+
+---
+
+apiVersion: environment.azuredevops.m.crossplane.io/v1alpha1
+kind: Environment
+metadata:
+  annotations:
+    meta.upbound.io/example-id: environment/v1alpha1/resourcekubernetes
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    name: Example Environment
+    projectId: ${azuredevops_project.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: environment/v1alpha1/resourcekubernetes
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
+
+---
+
+apiVersion: serviceendpoint.azuredevops.m.crossplane.io/v1alpha1
+kind: Kubernetes
+metadata:
+  annotations:
+    meta.upbound.io/example-id: environment/v1alpha1/resourcekubernetes
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    apiserverUrl: https://sample-kubernetes-cluster.hcp.westeurope.azmk8s.io
+    authorizationType: AzureSubscription
+    azureSubscription:
+    - clusterName: example-aks
+      namespace: default
+      resourcegroupId: example-rg
+      subscriptionId: 00000000-0000-0000-0000-000000000000
+      subscriptionName: Example
+      tenantId: 00000000-0000-0000-0000-000000000000
+    projectId: ${azuredevops_project.example.id}
+    serviceEndpointName: Example Kubernetes

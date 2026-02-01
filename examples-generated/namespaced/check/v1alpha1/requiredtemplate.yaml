@@ -1,0 +1,56 @@
+apiVersion: check.azuredevops.m.crossplane.io/v1alpha1
+kind: RequiredTemplate
+metadata:
+  annotations:
+    meta.upbound.io/example-id: check/v1alpha1/requiredtemplate
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    projectId: ${azuredevops_project.example.id}
+    requiredTemplate:
+    - repositoryName: project/repository
+      repositoryRef: refs/heads/main
+      repositoryType: azuregit
+      templatePath: template/path.yml
+    targetResourceId: ${azuredevops_serviceendpoint_generic.example.id}
+    targetResourceType: endpoint
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: check/v1alpha1/requiredtemplate
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    name: Example Project
+
+---
+
+apiVersion: serviceendpoint.azuredevops.m.crossplane.io/v1alpha1
+kind: Generic
+metadata:
+  annotations:
+    meta.upbound.io/example-id: check/v1alpha1/requiredtemplate
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    passwordSecretRef:
+      key: example-key
+      name: example-secret
+    projectId: ${azuredevops_project.example.id}
+    serverUrl: https://some-server.example.com
+    serviceEndpointName: Example Generic
+    username: username

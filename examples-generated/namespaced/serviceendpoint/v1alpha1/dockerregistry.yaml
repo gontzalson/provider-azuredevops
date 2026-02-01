@@ -1,0 +1,38 @@
+apiVersion: serviceendpoint.azuredevops.m.crossplane.io/v1alpha1
+kind: Dockerregistry
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/dockerregistry
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    dockerEmail: email@example.com
+    dockerPasswordSecretRef:
+      key: example-key
+      name: example-secret
+    dockerUsername: example
+    projectId: ${azuredevops_project.example.id}
+    registryType: DockerHub
+    serviceEndpointName: Example Docker Hub
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: serviceendpoint/v1alpha1/dockerregistry
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Managed by Terraform
+    name: Example Project
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile

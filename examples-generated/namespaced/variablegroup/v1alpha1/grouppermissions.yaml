@@ -1,0 +1,58 @@
+apiVersion: variablegroup.azuredevops.m.crossplane.io/v1alpha1
+kind: GroupPermissions
+metadata:
+  annotations:
+    meta.upbound.io/example-id: variablegroup/v1alpha1/grouppermissions
+  labels:
+    testing.upbound.io/example-name: permissions
+  name: permissions
+  namespace: crossplane-system
+spec:
+  forProvider:
+    permissions:
+      Administer: allow
+      Use: allow
+      View: allow
+    principal: ${data.azuredevops_group.tf-project-readers.id}
+    projectId: ${azuredevops_project.project.id}
+    variableGroupId: ${azuredevops_variable_group.example.id}
+
+---
+
+apiVersion: project.azuredevops.m.crossplane.io/v1alpha1
+kind: Project
+metadata:
+  annotations:
+    meta.upbound.io/example-id: variablegroup/v1alpha1/grouppermissions
+  labels:
+    testing.upbound.io/example-name: project
+  name: project
+  namespace: crossplane-system
+spec:
+  forProvider:
+    description: Testing-description
+    name: Testing
+    versionControl: Git
+    visibility: private
+    workItemTemplate: Agile
+
+---
+
+apiVersion: variablegroup.azuredevops.m.crossplane.io/v1alpha1
+kind: Group
+metadata:
+  annotations:
+    meta.upbound.io/example-id: variablegroup/v1alpha1/grouppermissions
+  labels:
+    testing.upbound.io/example-name: example
+  name: example
+  namespace: crossplane-system
+spec:
+  forProvider:
+    allowAccess: true
+    description: Test Description
+    name: test
+    projectId: ${azuredevops_project.project.id}
+    variable:
+    - name: key1
+      value: val1
