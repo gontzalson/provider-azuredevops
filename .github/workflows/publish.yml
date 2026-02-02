@@ -53,12 +53,25 @@ jobs:
             -o cluster/images/provider-azuredevops/bin/linux_amd64/provider \
             ./cmd/provider/main.go
 
+      - name: Extract version tag
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+            echo "has_tag=true" >> $GITHUB_OUTPUT
+          else
+            echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "has_tag=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build runtime image
         uses: docker/build-push-action@v6
         with:
           context: ./cluster/images/provider-azuredevops
           push: true
-          tags: ${{ env.REGISTRY }}/provider-azuredevops-runtime:latest
+          tags: |
+            ${{ env.REGISTRY }}/provider-azuredevops-runtime:latest
+            ${{ steps.version.outputs.has_tag == 'true' && format('{0}/provider-azuredevops-runtime:{1}', env.REGISTRY, steps.version.outputs.tag) || '' }}
           build-args: |
             TARGETOS=linux
             TARGETARCH=amd64
@@ -72,12 +85,24 @@ jobs:
       - name: Build and push xpkg
         run: |
           export PATH="$HOME/go/bin:$PATH"
+          TAG="${{ steps.version.outputs.tag }}"
           
-          # Build xpkg
+          # Build xpkg with version-tagged runtime image
+          if [ "${{ steps.version.outputs.has_tag }}" == "true" ]; then
+            RUNTIME_IMAGE="${{ env.REGISTRY }}/provider-azuredevops-runtime:${TAG}"
+          else
+            RUNTIME_IMAGE="${{ env.REGISTRY }}/provider-azuredevops-runtime:latest"
+          fi
+          
           crossplane xpkg build \
             --package-root=package \
-            --embed-runtime-image=${{ env.REGISTRY }}/provider-azuredevops-runtime:latest \
+            --embed-runtime-image="${RUNTIME_IMAGE}" \
             -o provider-azuredevops.xpkg
           
-          # Push xpkg  
-          crossplane xpkg push -f provider-azuredevops.xpkg ${{ env.REGISTRY }}/provider-azuredevops:latest
+          # Push xpkg with version tag
+          crossplane xpkg push -f provider-azuredevops.xpkg ${{ env.REGISTRY }}/provider-azuredevops:${TAG}
+          
+          # Also push as latest if this is a version tag
+          if [ "${{ steps.version.outputs.has_tag }}" == "true" ]; then
+            crossplane xpkg push -f provider-azuredevops.xpkg ${{ env.REGISTRY }}/provider-azuredevops:latest
+          fi
